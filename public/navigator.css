@@ -1,0 +1,68 @@
+.navigator{
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    height: 13.7vw;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding-bottom: 1rem;
+    z-index: 100;
+    background-color: #e6e6e6;
+}
+
+.navigator > a > div{
+    width:12vw;
+    height:12vw;
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+}
+
+.svg_nav{
+    position: fixed;
+    z-index: 10;
+    bottom: 13.5vw;
+}
+
+
+path {
+    fill: #e6e6e6;
+    stroke: rgba(0, 0, 0, 0.181);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    transition: all .2s ease-in-out;
+  }
+
+.scan_nav{
+    width:20vw !important;
+    height:20vw !important;
+}
+
+.recipt_nav{
+    background-image: url("images/receipt.png");
+}
+.budget_nav{
+    background-image: url("images/budget.png");
+}
+.scan_nav{
+    background-image: url("images/scan.png");
+}
+.group_nav{
+    background-image: url("images/group.png");
+}
+.user_nav{
+    background-image: url("images/user.png");
+}
+
+.active::before{
+    content:'';
+    display: block;
+    position: relative;
+    height:15vw;
+    width:15vw;
+    transform: translate(-1.5vw,-1.5vw);
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.112);
+    z-index: -1;
+}

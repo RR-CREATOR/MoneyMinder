@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receipt Parser</title>
+    <link rel="stylesheet" href="style_scan.css" />
+    <link rel="stylesheet" href="navigator.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <a id="back" href="index.html"
+      ><i class="fa-solid fa-arrow-left fa-2xl" style="color: black"></i
+    ></a>
+
+    <h1 id="head_text">Receipt Scanning</h1>
+    <h2 id="scan_r">Preview Image</h2>
+    <div id="receiptPreview">
+      <img id="previewImage" src="#" alt="" />
+    </div>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <label for="receiptFile" id="cam"></label>
+      <input
+        type="file"
+        name="input"
+        id="receiptFile"
+        accept="image/*"
+        capture="environment"
+      />
+      <label for="scan" id="scan_lab"></label>
+      <button type="submit" id="scan"></button>
+    </form>
+
+    <pre id="result"></pre>
+  </body>
+  <script src="main.js"></script>
+</html>

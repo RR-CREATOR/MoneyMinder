@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Share&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+    font-family: 'Montserrat', sans-serif;
+}
+body{
+    display: flex;
+    justify-content: center;
+    background-color: #e6e6e6;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7.5vw;
+}
+
+.heading{
+    background-image: url("images/MoneyMinder.png");
+    height:calc(85vw / 4.4);
+    width: 85%;
+    background-size: contain;
+    border-radius: 5%;
+}
+
+.catigories{
+    margin-top:1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2,calc(75vw / 2));
+    grid-template-rows: repeat(2,calc(75vw / 2));
+    gap: calc(10vw / 2);
+}
+
+.grey_box{
+    background-color: white;
+    border-radius: 4%;
+    box-shadow: 0px 0px 0px 2.1px rgba(0, 0, 0, 0.195);
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.img1{
+    background-image: url("images/groceries.png");
+    width: 60%;
+    height: 10rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+}
+.img2{
+    background-image: url("images/truck.png");
+    width: 80%;
+    height: 10rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+}
+.img3{
+    background-image: url("images/miccelaneous.png");
+    width: 60%;
+    height: 10rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+}
+.img4{
+    background-image: url("images/house.png");
+    width: 60%;
+    height: 10rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+}
+
+h2{
+    padding: .1rem;
+    font-size: 4.5vw;
+}
+h3{
+    padding: .1rem;
+    padding-bottom: .3rem;
+    font-size: 2.5vw;
+    display: block;
+}
+
+
+.box_budget{
+    width: 80%;
+    margin-top: 1.5rem;
+    background-color: white;
+    box-shadow: 0px 0px 0px 2.1px rgba(0, 0, 0, 0.195);
+    border-radius: 2vw;
+    padding: .5rem;
+}
+
+#total_spent{
+    margin-top: .5rem;
+}
+
+path {
+    fill: #e6e6e6;
+    stroke: rgba(0, 0, 0, 0.181);
+    stroke-width: 0px !important;
+    stroke-linejoin: round;
+    transition: all .2s ease-in-out;
+  }
+
+  /*
+  figure {
+    background-color: #eee;
+    display: block;
+    height: 0;
+    margin: 0 auto;
+    position: relative;
+    font-size:16px;
+    font-size:1vw;
+    width: 40em;
+    padding-bottom: 40em;
+  }
+  figcaption {
+    font-size:1rem;
+    text-align:center;
+    color:#fff;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top:40%;
+    z-index:2;
+  }
+  .svg_pi {
+    display: block;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+  }
+  circle {
+      fill:rgba(0,0,0,0);
+    stroke-width:31.8309886184;
+    stroke-dasharray: 0,0,0,100;
+    stroke-dashoffset: 25;
+    -webkit-animation: pie1 3s infinite ease both;
+    animation: pie1 6s infinite ease both;
+  }
+  .pie1 {
+    stroke:hsl(180,70%,30%);
+  }
+  .pie2 {
+    stroke:hsl(180,70%,50%);
+    -webkit-animation-name: pie2;
+    animation-name: pie2;
+  }
+  .pie3 {
+    stroke:hsl(180,70%,20%);
+    -webkit-animation-name: pie3;
+    animation-name: pie3;
+  }
+  .pie4 {
+    stroke:hsl(180,0%,70%);
+    -webkit-animation-name: pie4;
+    animation-name: pie4;
+  }
+  
+   pie percentage made by stroke-dasharray.
+   stroke-dasharray format is...
+  
+   keyframe 100% : 0 offset this-percentage rest
+  
+   I added keyframe 50% for infinite presentation.
+  
+  
+  /* 1st pie is 40% 
+  @-webkit-keyframes pie1 {
+    50%,100% {stroke-dasharray: 40,60,0,0;}
+  }
+  @keyframes pie1 {
+    50%,100% {stroke-dasharray: 40,60,0,0;}
+  }
+  /* 2nd pie is 30% 
+  @-webkit-keyframes pie2 {
+    50%,100% {stroke-dasharray: 0,40,30,30;}
+  }
+  @keyframes pie2 {
+    50%,100% {stroke-dasharray: 0,40,30,30;}
+  }
+  /* 3rd pie is 30% 
+  @-webkit-keyframes pie3 {
+    50%,100% {stroke-dasharray: 0,70,20,10;}
+  }
+  @keyframes pie3 {
+    50%,100% {stroke-dasharray: 0,70,20,10;}
+  }
+  /* 4th pie is 10% 
+  @-webkit-keyframes pie4 {
+    50%,100% {stroke-dasharray: 0,90,10,0;}
+  }
+  @keyframes pie4 {
+    50%,100% {stroke-dasharray: 0,90,10,0;}
+  }
+  */

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style_login.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <div class="logo"></div>
+    <form>
+      <h2>Username</h2>
+      <input type="text" id="fname" />
+      <h2>Password</h2>
+      <input type="text" id="pass" />
+      <button type="button" id="btn">Log In</button>
+    </form>
+    <div class="extras">
+      <a href="register.html"><h2>Sign up</h2></a>
+      <a><h2>forget password</h2></a>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+
+      const firebaseConfig = {
+    apiKey: "AIzaSyD5AuaBlvRrlchqTDNyTKsCaHfFoFXOxE4",
+    authDomain: "moneyminder-8dea2.firebaseapp.com",
+    projectId: "moneyminder-8dea2",
+    storageBucket: "moneyminder-8dea2.appspot.com",
+    messagingSenderId: "884055385512",
+    appId: "1:884055385512:web:102b2b13ef342ba65f699d"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        addDoc,
+        updateDoc,
+        deleteDoc,
+        deleteField,
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+      const db = getFirestore();
+
+      let logBtn = document.getElementById("btn");
+      let nameBox = document.getElementById("fname");
+      let pasBox = document.getElementById("pass");
+
+      async function login(e) {
+        e.preventDefault();
+        var userName = nameBox.value;
+        var password = pasBox.value;
+
+        const docSnap = await getDoc(doc(db, nameBox.value, "Credentials"));
+
+        if (docSnap.exists()) {
+          if (password == docSnap.data().Password) {
+            alert("Login Successful");
+            localStorage.setItem("user", userName);
+            setTimeout(() => {
+              window.location = "index.html";
+            }, 1000);
+          } else {
+            alert("Password is incorrect. Please check your password");
+          }
+        } else {
+          alert(
+            "Please check your User Name. If you have not registered, please do so by clicking on the register button"
+          );
+        }
+      }
+
+      logBtn.addEventListener("click", login);
+    </script>
+  </body>
+</html>

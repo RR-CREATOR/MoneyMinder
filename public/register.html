@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style_register.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <a id="back" href="login.html"
+      ><i
+        class="fa-solid fa-arrow-left fa-2xl"
+        style="color: rgb(237, 237, 237)"
+      ></i
+    ></a>
+    <form>
+      <h2>Username</h2>
+      <input type="text" id="fname" />
+      <h2>Email</h2>
+      <input type="text" id="mail" />
+      <h2>Mobile number</h2>
+      <input type="text" id="num" />
+      <h2>BUDGET in inr</h2>
+      <input type="text" id="budget" />
+      <h2>password</h2>
+      <input type="text" id="pass" />
+      <button type="button" id="register_button">Sign Up</button>
+    </form>
+
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5AuaBlvRrlchqTDNyTKsCaHfFoFXOxE4",
+    authDomain: "moneyminder-8dea2.firebaseapp.com",
+    projectId: "moneyminder-8dea2",
+    storageBucket: "moneyminder-8dea2.appspot.com",
+    messagingSenderId: "884055385512",
+    appId: "1:884055385512:web:102b2b13ef342ba65f699d"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        addDoc,
+        updateDoc,
+        deleteDoc,
+        deleteField,
+      } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+      const db = getFirestore();
+
+      //CODE MAIN//
+
+      let nameBox = document.getElementById("fname");
+      let pasBox = document.getElementById("pass");
+      let regBtn = document.getElementById("register_button");
+      let budget = document.getElementById("budget");
+      let num = document.getElementById("num");
+      let email = document.getElementById("mail");
+
+      async function AddDocument_CustomID() {
+        if (nameBox.value == "") {
+          alert("Please enter a user name");
+        } else if (nameBox.value != "" && pasBox.value == "") {
+          alert("Please enter a password");
+        } else if (
+          nameBox.value != "" &&
+          pasBox.value != "" &&
+          email.value == ""
+        ) {
+          alert("Please enter an email ID");
+        } else if (
+          nameBox.value != "" &&
+          pasBox.value != "" &&
+          email.value != "" &&
+          num.value == ""
+        ) {
+          alert("Please enter a mobile number");
+        } else if (
+          nameBox.value != "" &&
+          pasBox.value != "" &&
+          email.value != "" &&
+          num.value != "" &&
+          budget.value == ""
+        ) {
+          alert("Please enter a budget");
+        } else {
+          const docRef = await setDoc(doc(db, nameBox.value, "Credentials"), {
+            UserName: nameBox.value,
+            Password: pasBox.value,
+            emailID: email.value,
+            MobileNumber: num.value,
+            Budget: budget.value,
+            NumberofItems: 0,
+            House: 0,
+            Transport: 0,
+            Food: 0,
+            Misc: 0,
+            dummy: 0
+          })
+            .then(() => {
+              alert("User Registered");
+              setTimeout(() => {
+                window.location = "login.html";
+              }, 1000);
+            })  
+            .catch((error) => {
+              alert("Unsuccessful, error: " + error);
+            });
+        }
+      }
+
+      regBtn.addEventListener("click", AddDocument_CustomID);
+    </script>
+  </body>
+</html>

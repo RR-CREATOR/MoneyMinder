@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Share&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+    font-family: 'Montserrat', sans-serif;
+}
+body{
+    display: flex;
+    justify-content: center;
+    background-color: #e6e6e6;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7.5vw;
+    margin-bottom: 33vw;
+}
+
+
+.heading{
+    background-image: url("images/MoneyMinder.png");
+    height:calc(85vw / 4.4);
+    width: 85%;
+    background-size: contain;
+    border-radius: 5%;
+}
+
+#head_text{
+    padding-top: 1.5rem;
+    width:85vw;
+    text-align: left;
+    font-size: 8vw;
+}
+
+path {
+    fill: #e6e6e6;
+    stroke: rgba(0, 0, 0, 0.181);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    transition: all .2s ease-in-out;
+  }
+
+  .image{
+    
+    width: 85vw;
+    height: 85vw;
+    margin-top: 1.5rem;
+    background-size: cover;
+    cursor: pointer;
+    transition: 0.3s;
+
+  }
+
+  h2{
+    font-size: 5vw;
+    align-self: start !important;
+
+  }
+  .cont{
+    width: 85vw;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    margin-top: 1rem;
+  }
+  
+  .image:hover {opacity: 0.7;}
+  
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 10000; 
+    padding-top: 100px; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.9); 
+  }
+  
+
+  .modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+  }
+  
+  #caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+  }
+  
+  .modal-content, #caption {
+    animation-name: zoom;
+    animation-duration: 0.6s;
+  }
+  
+  @keyframes zoom {
+    from {transform:scale(0)}
+    to {transform:scale(1)}
+  }
+
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  @media only screen and (max-width: 700px){
+    .modal-content {
+      width: 100%;
+    }
+  }

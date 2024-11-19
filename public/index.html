@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style_budget.css">
+    <link rel="stylesheet" href="navigator.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="heading">
+    </div>
+    <div class="catigories">
+        <div class="grey_box">
+            <div class="img1">
+            </div>
+
+            <h2> Groceries </h2>
+            <h3 id="Groceries_price"> ₹ 3000</h3>
+        </div>
+        <div class="grey_box">
+            <div class="img2">
+            </div>
+
+            <h2> Transport </h2>
+            <h3 id="Truck_price"> ₹ 3000</h3>
+        </div>
+        <div class="grey_box">
+            <div class="img3">
+
+            </div>
+            <h2> Micellaneous </h2>
+            <h3 id="Micellaneous_price"> ₹ 3000 </h3>
+        </div>
+        <div class="grey_box">
+            <div class="img4">
+
+            </div>
+            <h2> Housing </h2>
+            <h3 id="Housing_price"> ₹ 3000</h3>
+        </div>
+        </div>
+
+        <div class="box_budget">
+        <h2 id="budget_dia">
+            Youre Doing Good so far
+        </h2>
+
+        <h3 id="total_spent">
+            total spent :- 
+        </h3>
+        <h3 id="daily_budget">
+            daily budget :- 
+        </h3>
+        </div>
+    </div>
+
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" class="svg_nav">
+        <path id="path_nav" fill="#e6e6e6" fill-opacity="1" d="M0,192L48,208C96,224,192,256,288,240C384,224,480,160,576,117.3C672,75,768,53,864,58.7C960,64,1056,96,1152,128C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
+
+
+    <div class="navigator">
+        <a href="recipt.html"><div class="recipt_nav"></div></a>
+        <a href=""><div class="budget_nav active"></div></a>
+        <a href="scan.html"><div class="scan_nav"></div></a>
+        <a href=""><div class="group_nav"></div></a>
+        <a href=""><div class="user_nav"></div></a>
+    </div>
+    
+</body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5AuaBlvRrlchqTDNyTKsCaHfFoFXOxE4",
+    authDomain: "moneyminder-8dea2.firebaseapp.com",
+    projectId: "moneyminder-8dea2",
+    storageBucket: "moneyminder-8dea2.appspot.com",
+    messagingSenderId: "884055385512",
+    appId: "1:884055385512:web:102b2b13ef342ba65f699d"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+const db = getFirestore();
+
+var userName = localStorage.getItem("user");
+
+if(localStorage.getItem("rec") == 1){
+if(localStorage.getItem("data1") != null || localStorage.getItem("data1") != "")
+    {
+    console.log(localStorage.getItem("data1"));
+    console.log(localStorage.getItem("data2"));
+    console.log(localStorage.getItem("data3"));
+    console.log(localStorage.getItem("data4"));
+    console.log(localStorage.getItem("data5"));
+    console.log(localStorage.getItem("img"));
+    const docSnap = await getDoc(doc(db, userName, "Credentials"));
+    var num;
+    var house;
+    var transport;
+    var food;
+    var misc;
+    if (docSnap.exists()) {
+          num = docSnap.data().NumberofItems;
+          house = docSnap.data().House;
+          transport = docSnap.data().Transport;
+          food = docSnap.data().Food;
+          misc = docSnap.data().Misc;
+    } 
+    const docRef = await setDoc(doc(db, userName, num.toString()), {
+        Category: localStorage.getItem("data1").toUpperCase(),
+        Date: localStorage.getItem("data2"),
+        Amount: localStorage.getItem("data3"),
+        Supplier: localStorage.getItem("data4"),
+        Document: localStorage.getItem("data5"),
+        Image: localStorage.getItem("img")
+          })
+            .then(() => {
+                 if(localStorage.getItem("data1") == "food"){
+                    food += parseInt(localStorage.getItem("data3"));
+                 } else if (localStorage.getItem("data1") == "accomodation"){
+                    house += parseInt(localStorage.getItem("data3"));
+                 } else if (localStorage.getItem("data1") == "transport" || localStorage.getItem("data1") == "gasoline" || localStorage.getItem("data1") == "parking"){
+                    transport += parseInt(localStorage.getItem("data3"));
+                 } else{
+                    misc += parseInt(localStorage.getItem("data3"));
+                 }  
+                localStorage.removeItem("data1");
+                localStorage.removeItem("data2");
+                localStorage.removeItem("data3");
+                localStorage.removeItem("data4");
+                localStorage.removeItem("data5");
+                localStorage.removeItem("Image")
+              console.log("User Registered");
+              localStorage.setItem("rec", 0);
+              num += 1;
+                const docRef = updateDoc(doc(db, userName, "Credentials"), {
+                    NumberofItems: num,
+                    House: house,
+                    Transport: transport,
+                    Food: food,
+                    Misc: misc
+                });
+            })
+            .catch((error) => {
+              console.log("Unsuccessful, error: " + error);
+            });
+    }
+}
+const docSnap = await getDoc(doc(db, userName, "Credentials"));
+
+if(docSnap.exists()){
+    
+    var house = docSnap.data().House;
+    var micc = docSnap.data().Misc;
+    var food = docSnap.data().Food;
+    var car = docSnap.data().Transport;
+    var budget = docSnap.data().Budget;
+
+
+    var spent = micc + food + car + house;
+    var date = new Date().getDate();
+
+
+
+    console.log(date);
+    if(spent  > budget/30*date)
+    {
+        document.getElementById("budget_dia").innerHTML = "Reduce spending for the rest of the Month";
+    }
+    else{
+        document.getElementById("budget_dia").innerHTML = "Youre Doing Good so far";
+    }
+
+    document.getElementById("daily_budget").innerHTML = "daily budget :- ₹ " + budget/30;
+    document.getElementById("total_spent").innerHTML = "total spent :- ₹ " + spent;
+    document.getElementById("Groceries_price").innerHTML = "₹ " + food;
+    document.getElementById("Micellaneous_price").innerHTML = "₹ " + micc;
+    document.getElementById("Housing_price").innerHTML = "₹ " + house;
+    document.getElementById("Truck_price").innerHTML = "₹ " + car;
+}
+
+</script>
+
+
+<script>
+   
+     // navbar script
+    $(window).scroll(function() {
+    if($(window).scrollTop() + $(window).height() > $(document).height() - 18) {
+        document.getElementById("path_nav").style= 'stroke-width:0px';
+    }
+    else{
+        document.getElementById("path_nav").style= 'stroke-width:9px';
+    }
+    });
+  </script>
+</html>

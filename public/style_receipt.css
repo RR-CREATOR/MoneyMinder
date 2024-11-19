@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Share&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; 
+  font-family: 'Montserrat', sans-serif;
+}
+body{
+    display: flex;
+    justify-content: center;
+    background-color: #e6e6e6;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7.5vw;
+    margin-bottom: 33vw;
+}
+
+.heading{
+    background-image: url("images/MoneyMinder.png");
+    height:calc(85vw / 4.4);
+    width: 85%;
+    background-size: contain;
+    border-radius: 5%;
+}
+
+#head_text{
+    padding-top: 1.5rem;
+    width:85vw;
+    text-align: left;
+    font-size: 8vw;
+}
+
+.box{
+    background-color: white;
+    box-shadow: 0px 0px 0px 2.1px rgba(0, 0, 0, 0.195);
+    border-radius: 2vw;
+    padding: 1rem;
+    transition: all .2s ease-in-out;
+    margin-top: 1.5rem;
+}
+
+.box:hover{
+    transform: scale(1.03);
+}
+
+.flex{
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.small_gap{
+    height: .65rem;
+}
+
+h2{
+    padding: .1rem;
+    font-size: 4.5vw;
+}
+h3{
+    padding: .1rem;
+    padding-bottom: .3rem;
+    font-size: 3.2vw;
+    display: block;
+}
+
+h10{
+    font-size: 0;
+    display: none;
+}
+
+#cont{
+    width:85vw;
+}

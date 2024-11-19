@@ -1,0 +1,42 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const uploadForm = document.getElementById("uploadForm");
+    const resultDisplay = document.getElementById("result");
+    const previewImage = document.getElementById("previewImage");
+
+    // Add an event listener to the file input
+    const fileInput = document.getElementById("receiptFile");
+    fileInput.addEventListener("change", () => {
+        const selectedFile = fileInput.files[0];
+
+        // Check if a file was selected
+        if (selectedFile) {
+            // Display the selected image as a preview
+            const imageUrl = URL.createObjectURL(selectedFile);
+            previewImage.src = imageUrl;
+
+            // Reset the parsing result display
+            resultDisplay.textContent = "";
+        } else {
+            // Clear the preview and result if no file is selected
+            previewImage.src = "";
+            resultDisplay.textContent = "";
+        }
+    });
+
+    uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(uploadForm);
+        fetch("/parse-receipt", {
+            method: "POST",
+            body: formData,
+        }).then((response) => response.json())
+            .then((data) => {
+                // Handle the response from the server
+                resultDisplay.textContent = JSON.stringify(data, null, 2);
+            })
+            .catch((error) => {
+                resultDisplay.textContent = "An error occurred.";
+            });
+    });
+});

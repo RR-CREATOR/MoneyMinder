@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Share&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+    font-family: 'Montserrat', sans-serif;
+}
+body{
+    display: flex;
+    justify-content: center;
+    background-color: #e6e6e6;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7.5vw;
+    margin-bottom: 2vw;
+}
+
+#head_text{
+    padding-bottom: .5rem;
+    width:85vw;
+    text-align: center;
+    font-size: 8vw;
+}
+
+#cam{
+    display: block;
+    height:15vw;
+    width: 15vw;
+    background-image: url("images/scan.png");
+    background-size: cover;
+    position: absolute;
+    bottom: 2rem;
+    left: 25vw;
+}
+#scan_r{
+    margin-bottom: .8rem;
+}
+#scan{
+    
+    visibility: hidden;   
+}
+
+#back{
+    position:absolute;
+    left: 1rem;
+    bottom: 2rem;
+  }
+
+#scan_lab{
+    display: block;
+    height:15vw;
+    width: 15vw;
+    z-index: 100;
+    background-image: url("images/camera.png");
+    background-size: cover;
+    position: absolute;
+    bottom: 2rem;
+    right: 25vw;
+}
+
+form{
+    justify-content: center;
+    width: 100vw;
+    z-index: 100;
+}
+
+img{
+    height: 60vh;
+    width: 80vw;
+}
+
+
+#receiptFile
+{
+    visibility: hidden;
+}
+
