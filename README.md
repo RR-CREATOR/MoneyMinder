@@ -8,8 +8,8 @@ kindly use inspect and phone mode on pc or host the node js code on mobile to vi
 for PC(vs code), to run using local host, local host login.html. 
 
 to run using node js, 
-run the following command in the folder in which you downloaded in cmd:(vc code terminal might not work)
-npm install mindee express multer cors(just to be safe as it sometimes shows errors, if it doesn't just directly run code)
+run the following command in the folder in which you downloaded in cmd:(vs code terminal might not work)
+npm install mindee express multer cors(required node modules)
 
 to run code, use cmd: node app.js
 
