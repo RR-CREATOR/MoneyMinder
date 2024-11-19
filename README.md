@@ -1,0 +1,2 @@
+# MoneyMinder
+fintech webapp
