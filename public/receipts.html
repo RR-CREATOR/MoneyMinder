@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Receipts · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen">
+      <h1>Receipts</h1>
+      <div id="sk" aria-hidden="true">
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+      <div id="list" class="reveal"></div>
+      <p class="msg msg--error" id="error" role="alert" hidden></p>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Primary"></nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    renderNav("receipts.html");
+
+    const list = document.getElementById("list");
+    const sk = document.getElementById("sk");
+    const error = document.getElementById("error");
+    const fmt = API.formatMoney;
+    const esc = API.escapeHtml;
+
+    (async () => {
+      try {
+        await API.requireUser();
+        const { receipts } = await API.get("/api/receipts");
+        sk.remove();
+
+        if (!receipts.length) {
+          list.innerHTML =
+            '<div class="empty">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l4 4v16l-3-2-2 2-2-2-2 2-2-2-2 2V2z"/><path d="M9 8h6M9 12h6"/></svg>' +
+            "<p>No receipts yet — start tracking your spend.</p>" +
+            '<a class="btn btn--auto" href="scan.html">Scan your first receipt</a></div>';
+          return;
+        }
+
+        list.innerHTML = receipts.map((r) => {
+          const supplier = r.supplier || "Receipt";
+          const sub = [r.category, r.date].filter(Boolean).map(esc).join(" · ");
+          return (
+            '<a class="card receipt-card" href="receipt.html?id=' + encodeURIComponent(r.id) + '">' +
+            '<span class="meta">' +
+            '<span class="tag">' + esc(r.category || "misc") + "</span>" +
+            '<div class="supplier">' + esc(supplier) + "</div>" +
+            '<div class="sub">' + sub + "</div>" +
+            "</span>" +
+            '<span class="amt">' + fmt(r.amount) + "</span>" +
+            "</a>"
+          );
+        }).join("");
+      } catch (err) {
+        sk.remove();
+        error.textContent = err.message;
+        error.hidden = false;
+        if (window.Toast) Toast.show(err.message, "error");
+      }
+    })();
+  </script>
+</body>
+</html>

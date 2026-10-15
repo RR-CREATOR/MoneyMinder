@@ -1,44 +1,330 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Receipt Parser</title>
-    <link rel="stylesheet" href="style_scan.css" />
-    <link rel="stylesheet" href="navigator.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-  </head>
-  <body>
-    <a id="back" href="index.html"
-      ><i class="fa-solid fa-arrow-left fa-2xl" style="color: black"></i
-    ></a>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Scan · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen">
+      <h1>Scan a receipt</h1>
+      <p class="muted">Choose a JPEG or PNG receipt image and we'll try to read the details.</p>
 
-    <h1 id="head_text">Receipt Scanning</h1>
-    <h2 id="scan_r">Preview Image</h2>
-    <div id="receiptPreview">
-      <img id="previewImage" src="#" alt="" />
-    </div>
+      <img class="preview" id="preview" alt="Selected receipt preview" hidden />
 
-    <form id="uploadForm" enctype="multipart/form-data">
-      <label for="receiptFile" id="cam"></label>
-      <input
-        type="file"
-        name="input"
-        id="receiptFile"
-        accept="image/*"
-        capture="environment"
-      />
-      <label for="scan" id="scan_lab"></label>
-      <button type="submit" id="scan"></button>
-    </form>
+      <form id="upload">
+        <label class="file-drop" id="drop">
+          <span id="drop-label">Tap to choose a receipt image</span>
+          <input type="file" id="file" name="input" accept="image/*" capture="environment" />
+        </label>
+        <button class="btn" type="submit" id="scan-btn" disabled>Scan receipt</button>
+      </form>
 
-    <pre id="result"></pre>
-  </body>
-  <script src="main.js"></script>
+      <p class="msg msg--note" id="note" hidden></p>
+      <p class="msg msg--error" id="error" role="alert" hidden></p>
+
+      <!-- Single-total flow (no line items, or fallback) -->
+      <form id="details" hidden>
+        <h2 class="section-label">Receipt details</h2>
+        <div class="field">
+          <label for="category">Category</label>
+          <input class="input" id="category" name="category" placeholder="food, transport, accommodation…" />
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input class="input" id="date" name="date" type="date" />
+        </div>
+        <div class="field">
+          <label for="amount">Amount (₹)</label>
+          <input class="input" id="amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required />
+        </div>
+        <div class="field">
+          <label for="supplier">Supplier</label>
+          <input class="input" id="supplier" name="supplier" />
+        </div>
+        <div class="field">
+          <label for="document">Payment / document</label>
+          <input class="input" id="document" name="document" />
+        </div>
+        <p class="msg msg--error" id="save-error" role="alert" hidden></p>
+        <button class="btn" type="submit" id="save-btn">Save receipt</button>
+      </form>
+
+      <!-- Line-item split flow -->
+      <section id="lines" hidden>
+        <h2 class="section-label">Split the line items</h2>
+        <p class="muted">Mark each item yours or shared. Shared items go to the chosen household.</p>
+        <div class="field" id="house-field" hidden>
+          <label for="house">Shared household</label>
+          <select class="input" id="house"></select>
+        </div>
+        <div id="line-rows"></div>
+        <p class="msg msg--error" id="lines-error" role="alert" hidden></p>
+        <button class="btn" type="button" id="lines-save">Save split</button>
+      </section>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Primary"></nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    renderNav("scan.html");
+
+    const esc = API.escapeHtml;
+    const fileInput = document.getElementById("file");
+    const preview = document.getElementById("preview");
+    const dropLabel = document.getElementById("drop-label");
+    const scanBtn = document.getElementById("scan-btn");
+    const upload = document.getElementById("upload");
+    const details = document.getElementById("details");
+    const lines = document.getElementById("lines");
+    const lineRows = document.getElementById("line-rows");
+    const houseField = document.getElementById("house-field");
+    const houseSel = document.getElementById("house");
+    const linesError = document.getElementById("lines-error");
+    const linesSave = document.getElementById("lines-save");
+    const note = document.getElementById("note");
+    const error = document.getElementById("error");
+    const saveError = document.getElementById("save-error");
+    const saveBtn = document.getElementById("save-btn");
+
+    let imageName = "";
+    let parsed = null; // last parse result (for receipt category/date defaults)
+    let households = []; // [{id,name}]
+    let lastItems = []; // parsed line items currently shown
+
+    API.requireUser().catch((err) => {
+      error.textContent = err.message;
+      error.hidden = false;
+    });
+
+    // Map an OCR category guess to one of the household buckets.
+    function toBucket(c) {
+      c = String(c || "").toLowerCase();
+      if (c === "food") return "food";
+      if (["travel", "transport", "gasoline", "parking", "toll"].includes(c)) return "travel";
+      if (["housing", "accommodation"].includes(c)) return "housing";
+      return "misc";
+    }
+
+    fileInput.addEventListener("change", () => {
+      error.hidden = true;
+      const f = fileInput.files[0];
+      if (!f) {
+        preview.hidden = true;
+        scanBtn.disabled = true;
+        return;
+      }
+      preview.src = URL.createObjectURL(f);
+      preview.hidden = false;
+      dropLabel.textContent = f.name;
+      scanBtn.disabled = false;
+    });
+
+    upload.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      error.hidden = true;
+      const f = fileInput.files[0];
+      if (!f) return;
+      scanBtn.disabled = true;
+      scanBtn.textContent = "Scanning…";
+      try {
+        const fd = new FormData();
+        fd.append("input", f);
+        const r = await API.postForm("/api/parse-receipt", fd);
+        parsed = r;
+        imageName = r.image || "";
+
+        const items = Array.isArray(r.lineItems) ? r.lineItems.filter((it) => Number(it.amount) > 0) : [];
+        if (items.length) {
+          await showLineItems(items, r);
+        } else {
+          showSingleTotal(r);
+        }
+      } catch (err) {
+        error.textContent = err.message;
+        error.hidden = false;
+        if (window.Toast) Toast.show(err.message, "error");
+      } finally {
+        scanBtn.disabled = false;
+        scanBtn.textContent = "Scan receipt";
+      }
+    });
+
+    // ---- Single-total fallback (unchanged flow) ----
+    function showSingleTotal(r) {
+      lines.hidden = true;
+      document.getElementById("category").value = r.category || "";
+      document.getElementById("date").value = r.date || "";
+      document.getElementById("amount").value = r.amount === "" || r.amount == null ? "" : r.amount;
+      document.getElementById("supplier").value = r.supplier || "";
+      document.getElementById("document").value = r.document || "";
+      note.hidden = r.configured !== false;
+      if (r.configured === false) note.textContent = "Couldn't auto-read it — enter the details below.";
+      details.hidden = false;
+      details.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // ---- Line-item split ----
+    async function showLineItems(items, r) {
+      lastItems = items;
+      details.hidden = true;
+      note.hidden = true;
+
+      // Load households for the shared picker (best effort).
+      try {
+        const res = await API.get("/api/households");
+        households = res.households || [];
+      } catch (_) { households = []; }
+
+      houseSel.innerHTML = households.map((h) =>
+        '<option value="' + esc(h.id) + '">' + esc(h.name) + "</option>"
+      ).join("");
+
+      lineRows.innerHTML = items.map((it, i) => {
+        const desc = it.description || "Item " + (i + 1);
+        return (
+          '<div class="card line-row" data-i="' + i + '">' +
+          '<div class="line-head"><span class="supplier">' + esc(desc) + "</span>" +
+          '<span class="amt">' + API.formatMoney(it.amount) + "</span></div>" +
+          '<div class="seg" role="group" aria-label="Assign ' + esc(desc) + '">' +
+          '<button type="button" class="seg-btn is-active" data-i="' + i + '" data-mode="mine" aria-pressed="true">Mine</button>' +
+          '<button type="button" class="seg-btn" data-i="' + i + '" data-mode="shared" aria-pressed="false">Shared</button>' +
+          "</div></div>"
+        );
+      }).join("");
+
+      // Track each line's mode; default everything to "mine".
+      lineRows.querySelectorAll(".seg-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const row = btn.closest(".line-row");
+          row.querySelectorAll(".seg-btn").forEach((b) => {
+            const on = b === btn;
+            b.classList.toggle("is-active", on);
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+          updateHousePicker();
+        });
+      });
+
+      lines.hidden = false;
+      lines.scrollIntoView({ behavior: "smooth", block: "start" });
+      updateHousePicker();
+    }
+
+    // Show the household picker only when at least one line is shared.
+    function updateHousePicker() {
+      const anyShared = [...lineRows.querySelectorAll(".seg-btn.is-active")].some((b) => b.dataset.mode === "shared");
+      houseField.hidden = !(anyShared && households.length);
+    }
+
+    linesSave.addEventListener("click", async () => {
+      linesError.hidden = true;
+      const rows = [...lineRows.querySelectorAll(".line-row")];
+      // The saved flag lives on the row element so it survives across retry
+      // clicks (the handler re-maps `rows` each time it fires).
+      const items = rows.map((row) => {
+        const i = Number(row.dataset.i);
+        const active = row.querySelector(".seg-btn.is-active");
+        return { row, i, mode: active.dataset.mode, item: lastItems[i], saved: row.dataset.saved === "1" };
+      });
+      const shared = items.filter((x) => x.mode === "shared");
+      if (shared.length && !households.length) {
+        linesError.textContent = "Create a household first to share items.";
+        linesError.hidden = false;
+        return;
+      }
+      const householdId = houseSel.value;
+      linesSave.disabled = true;
+
+      // Idempotent save: each line is marked saved once its POST resolves, so a
+      // mid-loop failure + retry never double-charges already-saved lines.
+      let saved = 0;
+      const total = items.length;
+      for (const entry of items) {
+        if (entry.saved) { saved++; continue; } // already posted on a prior run
+        const { mode, item } = entry;
+        try {
+          if (mode === "mine") {
+            const body = {
+              category: toBucket(parsed.category),
+              date: parsed.date || "",
+              amount: Number(item.amount),
+              supplier: parsed.supplier || "",
+              document: item.description || "",
+              image: imageName,
+            };
+            await API.post("/api/receipts", body, API.operationKey(entry.row, body));
+          } else {
+            const body = {
+              description: item.description || "Receipt item",
+              amount: Number(item.amount),
+              category: toBucket(parsed.category),
+              date: parsed.date || "",
+            };
+            await API.post(
+              "/api/households/" + encodeURIComponent(householdId) + "/expenses",
+              body,
+              API.operationKey(entry.row, body),
+            );
+          }
+          API.clearOperation(entry.row);
+          entry.row.dataset.saved = "1";
+          saved++;
+        } catch (err) {
+          // Stop on the first failure; only the unsaved lines remain to retry.
+          linesError.textContent = "Saved " + saved + " of " + total + " — tap Save to retry the rest.";
+          linesError.hidden = false;
+          if (window.Toast) Toast.show("Saved " + saved + " of " + total + " — tap Save to retry the rest", "error");
+          linesSave.disabled = false;
+          return;
+        }
+      }
+      if (window.Toast) Toast.show("Receipt saved", "ok");
+      location.href = "receipts.html";
+    });
+
+    // ---- Single-total save (unchanged) ----
+    details.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      saveError.hidden = true;
+      const amount = document.getElementById("amount").value;
+      if (amount === "" || !Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+        saveError.textContent = "Enter a valid amount.";
+        saveError.hidden = false;
+        return;
+      }
+      saveBtn.disabled = true;
+      try {
+        const body = {
+          category: document.getElementById("category").value.trim(),
+          date: document.getElementById("date").value,
+          amount: Number(amount),
+          supplier: document.getElementById("supplier").value.trim(),
+          document: document.getElementById("document").value.trim(),
+          image: imageName,
+        };
+        await API.post("/api/receipts", body, API.operationKey(details, body));
+        API.clearOperation(details);
+        if (window.Toast) Toast.show("Receipt saved", "ok");
+        location.href = "receipts.html";
+      } catch (err) {
+        saveError.textContent = err.message;
+        saveError.hidden = false;
+        if (window.Toast) Toast.show(err.message, "error");
+        saveBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
 </html>

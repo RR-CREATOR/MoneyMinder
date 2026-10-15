@@ -1,218 +1,262 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="style_budget.css">
-    <link rel="stylesheet" href="navigator.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Overview · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-    <div class="heading">
-    </div>
-    <div class="catigories">
-        <div class="grey_box">
-            <div class="img1">
-            </div>
+  <div class="app app--nav">
+    <main class="screen dashboard-screen">
+      <div id="sk" aria-hidden="true">
+        <div class="skeleton sk-line w-40"></div>
+        <div class="skeleton sk-hero"></div>
+        <div class="skeleton sk-block"></div>
+      </div>
 
-            <h2> Groceries </h2>
-            <h3 id="Groceries_price"> ₹ 3000</h3>
-        </div>
-        <div class="grey_box">
-            <div class="img2">
-            </div>
+      <div id="dash" class="reveal" hidden>
+        <header class="dashboard-head">
+          <div>
+            <p class="eyebrow" id="today"></p>
+            <h1 id="greeting">Hi</h1>
+          </div>
+          <a class="avatar-link" href="profile.html" aria-label="Open profile" id="avatar">M</a>
+        </header>
 
-            <h2> Transport </h2>
-            <h3 id="Truck_price"> ₹ 3000</h3>
-        </div>
-        <div class="grey_box">
-            <div class="img3">
+        <section class="overview-card" aria-labelledby="cost-title">
+          <div class="overview-topline">
+            <p id="cost-title">Your true cost this month</p>
+            <span class="pill" id="track-pill">—</span>
+          </div>
+          <div class="overview-amount amount" id="hero-spent">—</div>
+          <div class="overview-split">
+            <div><span>Personal</span><strong class="amount" id="hero-personal">—</strong></div>
+            <div><span>Shared</span><strong class="amount" id="hero-shared">—</strong></div>
+          </div>
+          <div class="budget-track" aria-hidden="true"><span id="budget-bar"></span></div>
+          <div class="budget-caption">
+            <span id="budget-used">—</span>
+            <span id="budget-left">—</span>
+          </div>
+        </section>
 
-            </div>
-            <h2> Micellaneous </h2>
-            <h3 id="Micellaneous_price"> ₹ 3000 </h3>
-        </div>
-        <div class="grey_box">
-            <div class="img4">
+        <a class="btn dashboard-primary" href="scan.html">Add an expense</a>
 
-            </div>
-            <h2> Housing </h2>
-            <h3 id="Housing_price"> ₹ 3000</h3>
-        </div>
-        </div>
+        <a class="settle-callout" id="settle-callout" href="household.html" hidden>
+          <span><strong id="settle-title">—</strong><small>Open your household to settle up</small></span>
+          <span aria-hidden="true">›</span>
+        </a>
 
-        <div class="box_budget">
-        <h2 id="budget_dia">
-            Youre Doing Good so far
-        </h2>
+        <section class="dashboard-section" aria-labelledby="categories-title">
+          <div class="section-head"><h2 id="categories-title">Where it goes</h2><a href="receipts.html">View all</a></div>
+          <div class="category-list" id="category-list"></div>
+        </section>
 
-        <h3 id="total_spent">
-            total spent :- 
-        </h3>
-        <h3 id="daily_budget">
-            daily budget :- 
-        </h3>
-        </div>
-    </div>
+        <section class="dashboard-section" aria-labelledby="recent-title">
+          <div class="section-head"><h2 id="recent-title">Recent activity</h2><a href="receipts.html">Receipts</a></div>
+          <div class="activity-list" id="activity-list"></div>
+        </section>
 
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" class="svg_nav">
-        <path id="path_nav" fill="#e6e6e6" fill-opacity="1" d="M0,192L48,208C96,224,192,256,288,240C384,224,480,160,576,117.3C672,75,768,53,864,58.7C960,64,1056,96,1152,128C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-    </svg>
+        <section class="dashboard-section" aria-labelledby="trend-title">
+          <div class="section-head"><h2 id="trend-title">Last 14 days</h2></div>
+          <div class="trend-surface" id="trend-svg"></div>
+        </section>
 
+        <aside class="promotion-card" id="promotion-card" aria-labelledby="promotion-title" hidden>
+          <div class="promotion-topline">
+            <span class="promotion-label">Sponsored</span>
+            <button class="promotion-dismiss" id="promotion-dismiss" type="button" aria-label="Dismiss sponsored offer">×</button>
+          </div>
+          <h2 id="promotion-title"></h2>
+          <p id="promotion-description"></p>
+          <a class="promotion-link" id="promotion-link" rel="noreferrer sponsored"></a>
+        </aside>
+      </div>
 
-    <div class="navigator">
-        <a href="recipt.html"><div class="recipt_nav"></div></a>
-        <a href=""><div class="budget_nav active"></div></a>
-        <a href="scan.html"><div class="scan_nav"></div></a>
-        <a href=""><div class="group_nav"></div></a>
-        <a href=""><div class="user_nav"></div></a>
-    </div>
-    
-</body>
+      <p class="msg msg--error" id="error" role="alert" hidden></p>
+    </main>
+  </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  <nav class="nav" aria-label="Primary"></nav>
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script src="js/onboard.js"></script>
+  <script>
+    renderNav("index.html");
+    const fmt = API.formatMoney;
+    const labels = { food: "Food", travel: "Travel", housing: "Housing", misc: "Misc", other: "Other" };
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD5AuaBlvRrlchqTDNyTKsCaHfFoFXOxE4",
-    authDomain: "moneyminder-8dea2.firebaseapp.com",
-    projectId: "moneyminder-8dea2",
-    storageBucket: "moneyminder-8dea2.appspot.com",
-    messagingSenderId: "884055385512",
-    appId: "1:884055385512:web:102b2b13ef342ba65f699d"
-  };
+    function normalizePromotion(promotion) {
+      if (!promotion || typeof promotion !== "object") return null;
+      if (
+        typeof promotion.id !== "string" ||
+        typeof promotion.title !== "string" ||
+        typeof promotion.description !== "string" ||
+        typeof promotion.ctaLabel !== "string" ||
+        typeof promotion.url !== "string"
+      ) return null;
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+      const id = promotion.id.trim();
+      const title = promotion.title.trim();
+      const description = promotion.description.trim();
+      const ctaLabel = promotion.ctaLabel.trim();
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ||
+        !title || title.length > 80 ||
+        !description || description.length > 240 ||
+        !ctaLabel || ctaLabel.length > 40 ||
+        promotion.url.length > 2048
+      ) return null;
 
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  deleteField,
-} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
-
-const db = getFirestore();
-
-var userName = localStorage.getItem("user");
-
-if(localStorage.getItem("rec") == 1){
-if(localStorage.getItem("data1") != null || localStorage.getItem("data1") != "")
-    {
-    console.log(localStorage.getItem("data1"));
-    console.log(localStorage.getItem("data2"));
-    console.log(localStorage.getItem("data3"));
-    console.log(localStorage.getItem("data4"));
-    console.log(localStorage.getItem("data5"));
-    console.log(localStorage.getItem("img"));
-    const docSnap = await getDoc(doc(db, userName, "Credentials"));
-    var num;
-    var house;
-    var transport;
-    var food;
-    var misc;
-    if (docSnap.exists()) {
-          num = docSnap.data().NumberofItems;
-          house = docSnap.data().House;
-          transport = docSnap.data().Transport;
-          food = docSnap.data().Food;
-          misc = docSnap.data().Misc;
-    } 
-    const docRef = await setDoc(doc(db, userName, num.toString()), {
-        Category: localStorage.getItem("data1").toUpperCase(),
-        Date: localStorage.getItem("data2"),
-        Amount: localStorage.getItem("data3"),
-        Supplier: localStorage.getItem("data4"),
-        Document: localStorage.getItem("data5"),
-        Image: localStorage.getItem("img")
-          })
-            .then(() => {
-                 if(localStorage.getItem("data1") == "food"){
-                    food += parseInt(localStorage.getItem("data3"));
-                 } else if (localStorage.getItem("data1") == "accomodation"){
-                    house += parseInt(localStorage.getItem("data3"));
-                 } else if (localStorage.getItem("data1") == "transport" || localStorage.getItem("data1") == "gasoline" || localStorage.getItem("data1") == "parking"){
-                    transport += parseInt(localStorage.getItem("data3"));
-                 } else{
-                    misc += parseInt(localStorage.getItem("data3"));
-                 }  
-                localStorage.removeItem("data1");
-                localStorage.removeItem("data2");
-                localStorage.removeItem("data3");
-                localStorage.removeItem("data4");
-                localStorage.removeItem("data5");
-                localStorage.removeItem("Image")
-              console.log("User Registered");
-              localStorage.setItem("rec", 0);
-              num += 1;
-                const docRef = updateDoc(doc(db, userName, "Credentials"), {
-                    NumberofItems: num,
-                    House: house,
-                    Transport: transport,
-                    Food: food,
-                    Misc: misc
-                });
-            })
-            .catch((error) => {
-              console.log("Unsuccessful, error: " + error);
-            });
-    }
-}
-const docSnap = await getDoc(doc(db, userName, "Credentials"));
-
-if(docSnap.exists()){
-    
-    var house = docSnap.data().House;
-    var micc = docSnap.data().Misc;
-    var food = docSnap.data().Food;
-    var car = docSnap.data().Transport;
-    var budget = docSnap.data().Budget;
-
-
-    var spent = micc + food + car + house;
-    var date = new Date().getDate();
-
-
-
-    console.log(date);
-    if(spent  > budget/30*date)
-    {
-        document.getElementById("budget_dia").innerHTML = "Reduce spending for the rest of the Month";
-    }
-    else{
-        document.getElementById("budget_dia").innerHTML = "Youre Doing Good so far";
+      let url;
+      try {
+        url = new URL(promotion.url);
+      } catch {
+        return null;
+      }
+      const hostname = url.hostname.toLowerCase().replace(/\.$/, "");
+      if (
+        url.protocol !== "https:" ||
+        url.username ||
+        url.password ||
+        url.port ||
+        !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(hostname) ||
+        /(^|\.)(localhost|local|internal|test|example|invalid|onion)$/i.test(hostname) ||
+        hostname.endsWith(".home.arpa")
+      ) return null;
+      return { id, title, description, ctaLabel, url: url.href };
     }
 
-    document.getElementById("daily_budget").innerHTML = "daily budget :- ₹ " + budget/30;
-    document.getElementById("total_spent").innerHTML = "total spent :- ₹ " + spent;
-    document.getElementById("Groceries_price").innerHTML = "₹ " + food;
-    document.getElementById("Micellaneous_price").innerHTML = "₹ " + micc;
-    document.getElementById("Housing_price").innerHTML = "₹ " + house;
-    document.getElementById("Truck_price").innerHTML = "₹ " + car;
-}
-
-</script>
-
-
-<script>
-   
-     // navbar script
-    $(window).scroll(function() {
-    if($(window).scrollTop() + $(window).height() > $(document).height() - 18) {
-        document.getElementById("path_nav").style= 'stroke-width:0px';
+    function reportPromotionEvent(promotionId, eventType) {
+      return API.post(
+        "/api/promotions/" + encodeURIComponent(promotionId) + "/events",
+        { eventType },
+        crypto.randomUUID(),
+        { keepalive: true },
+      ).catch(() => {
+        // Aggregate promotion metrics are best-effort and never block product use.
+      });
     }
-    else{
-        document.getElementById("path_nav").style= 'stroke-width:9px';
+
+    let visiblePromotionId = null;
+    let impressionObserver = null;
+
+    function observePromotionImpression(card, promotionId) {
+      if (!("IntersectionObserver" in window)) return;
+      if (impressionObserver) impressionObserver.disconnect();
+      impressionObserver = new IntersectionObserver((entries, observer) => {
+        const entry = entries[0];
+        if (!entry || !entry.isIntersecting || entry.intersectionRatio < 0.5) return;
+        observer.disconnect();
+        impressionObserver = null;
+        reportPromotionEvent(promotionId, "impression");
+      }, { threshold: 0.5 });
+      impressionObserver.observe(card);
     }
+
+    function renderPromotion(promotion) {
+      const safe = normalizePromotion(promotion);
+      if (!safe) return;
+      document.getElementById("promotion-title").textContent = safe.title;
+      document.getElementById("promotion-description").textContent = safe.description;
+      const link = document.getElementById("promotion-link");
+      link.textContent = safe.ctaLabel;
+      link.href = safe.url;
+      const card = document.getElementById("promotion-card");
+      visiblePromotionId = safe.id;
+      card.hidden = false;
+      observePromotionImpression(card, safe.id);
+    }
+
+    async function loadPromotion() {
+      try {
+        const { promotion } = await API.get("/api/promotions/current");
+        renderPromotion(promotion);
+      } catch {
+        // Promotions are optional and fail closed without blocking the dashboard.
+      }
+    }
+
+    document.getElementById("promotion-dismiss").addEventListener("click", () => {
+      document.getElementById("promotion-card").hidden = true;
+      visiblePromotionId = null;
+      if (impressionObserver) impressionObserver.disconnect();
+      impressionObserver = null;
     });
+
+    document.getElementById("promotion-link").addEventListener("click", (event) => {
+      if (!event.isTrusted || !visiblePromotionId) return;
+      reportPromotionEvent(visiblePromotionId, "click");
+    });
+
+    (async () => {
+      const error = document.getElementById("error");
+      try {
+        const [user, s, ins, receiptData, householdData] = await Promise.all([
+          API.requireUser(),
+          API.get("/api/summary"),
+          API.get("/api/insights"),
+          API.get("/api/receipts"),
+          API.get("/api/households"),
+        ]);
+        const name = user.displayName || user.username;
+        document.getElementById("today").textContent = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(new Date());
+        document.getElementById("greeting").textContent = "Hi, " + name;
+        document.getElementById("avatar").textContent = name.charAt(0).toUpperCase();
+        document.getElementById("hero-spent").textContent = fmt(s.spent);
+        document.getElementById("hero-personal").textContent = fmt(s.personalSpent);
+        document.getElementById("hero-shared").textContent = fmt(s.sharedShare);
+
+        const budget = Number(s.budget) || 0;
+        const used = budget ? Math.min(100, Math.round(s.spent / budget * 100)) : 0;
+        document.getElementById("budget-bar").style.width = used + "%";
+        document.getElementById("budget-used").textContent = budget ? used + "% of " + fmt(budget) + " budget" : "Set a monthly budget";
+        document.getElementById("budget-left").textContent = budget ? fmt(Math.max(0, budget - s.spent)) + " left" : "";
+        const pill = document.getElementById("track-pill");
+        pill.className = "pill " + (s.onTrack ? "pill--ok" : "pill--over");
+        pill.textContent = s.onTrack ? "On track" : "Over pace";
+
+        const households = householdData.households || [];
+        const balance = households.reduce((sum, h) => sum + Number(h.balance || 0), 0);
+        if (Math.abs(balance) > 0.005) {
+          const callout = document.getElementById("settle-callout");
+          document.getElementById("settle-title").textContent = balance > 0 ? "You’re owed " + fmt(balance) : "You owe " + fmt(Math.abs(balance));
+          callout.hidden = false;
+        }
+
+        const cats = Object.entries(s.categories).filter(([, value]) => Number(value) > 0).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        const max = Math.max(1, ...cats.map(([, value]) => Number(value) || 0));
+        document.getElementById("category-list").innerHTML = cats.length ? cats.map(([key, value]) =>
+          '<div class="category-row"><div><strong>' + labels[key] + '</strong><span>' + fmt(value) + '</span></div>' +
+          '<div class="category-track" aria-hidden="true"><span style="width:' + Math.round((Number(value) || 0) / max * 100) + '%"></span></div></div>'
+        ).join("") : '<div class="empty compact"><p>No spending this month.</p></div>';
+
+        const receipts = (receiptData.receipts || []).slice(0, 4);
+        document.getElementById("activity-list").innerHTML = receipts.length ? receipts.map((r) =>
+          '<a class="activity-row" href="receipt.html?id=' + encodeURIComponent(r.id) + '">' +
+          '<span><strong>' + API.escapeHtml(r.supplier || r.document || "Expense") + '</strong><small>' + API.escapeHtml(labels[r.category] || r.category || "Expense") + (r.date ? " · " + API.escapeHtml(r.date) : "") + '</small></span>' +
+          '<strong class="amount">' + fmt(r.amount) + '</strong></a>'
+        ).join("") : '<div class="empty compact"><p>No spending yet.</p><a class="link" href="scan.html">Scan your first receipt</a></div>';
+
+        document.getElementById("trend-svg").innerHTML = Charts.trend(ins.daily || []);
+        document.getElementById("sk").remove();
+        document.getElementById("dash").hidden = false;
+        loadPromotion();
+        if (window.Onboard) Onboard.start();
+      } catch (err) {
+        document.getElementById("sk").remove();
+        error.textContent = err.message;
+        error.hidden = false;
+      }
+    })();
   </script>
+</body>
 </html>

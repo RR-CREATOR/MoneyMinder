@@ -1,0 +1,31 @@
+[Unit]
+Description=MoneyMinder controlled-pilot container
+Documentation=file:/opt/moneyminder/deploy/oci/README.md
+Wants=network-online.target
+Requires=docker.service
+After=network-online.target docker.service
+RequiresMountsFor=/srv/moneyminder
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+Group=root
+UMask=0077
+WorkingDirectory=/opt/moneyminder/deploy/oci
+EnvironmentFile=/etc/moneyminder/deploy.env
+ExecStartPre=/usr/bin/docker compose --env-file /etc/moneyminder/deploy.env --file /opt/moneyminder/deploy/oci/compose.yaml config --quiet
+ExecStart=/usr/bin/docker compose --env-file /etc/moneyminder/deploy.env --file /opt/moneyminder/deploy/oci/compose.yaml up --detach --remove-orphans
+ExecReload=/usr/bin/docker compose --env-file /etc/moneyminder/deploy.env --file /opt/moneyminder/deploy/oci/compose.yaml up --detach --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file /etc/moneyminder/deploy.env --file /opt/moneyminder/deploy/oci/compose.yaml stop --timeout 30
+TimeoutStartSec=180
+TimeoutStopSec=120
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

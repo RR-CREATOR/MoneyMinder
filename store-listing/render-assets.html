@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MoneyMinder store assets</title>
+  <style>
+    :root {
+      --accent: #4f46e5;
+      --accent-dark: #3730a3;
+      --accent-soft: #eef2ff;
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #dfe3ee;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      opacity: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #fff;
+    }
+    body.ready { opacity: 1; }
+    .asset { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .brand { display: flex; align-items: center; gap: 18px; font-weight: 800; }
+    .brand img { width: 64px; height: 64px; border-radius: 16px; }
+    .brand span { font-size: 34px; letter-spacing: -0.03em; }
+
+    .feature {
+      padding: 62px 72px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(255,255,255,.20), transparent 26%),
+        linear-gradient(128deg, #312e81 0%, #4f46e5 54%, #6366f1 100%);
+    }
+    .feature .brand img, .promo .brand img { box-shadow: 0 16px 40px rgba(22, 18, 90, .32); }
+    .feature h1 {
+      max-width: 610px;
+      margin: 58px 0 22px;
+      font-size: 64px;
+      line-height: .98;
+      letter-spacing: -0.06em;
+    }
+    .feature p { max-width: 590px; margin: 0; font-size: 24px; line-height: 1.35; color: #e0e7ff; }
+    .feature .wallet-card {
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      right: 65px;
+      bottom: 60px;
+      border-radius: 64px;
+      transform: rotate(-7deg);
+      box-shadow: 0 30px 80px rgba(22, 18, 90, .38);
+    }
+
+    .phone-shot {
+      padding: 80px 76px 0;
+      text-align: center;
+      background:
+        radial-gradient(circle at 15% 7%, #c7d2fe, transparent 28%),
+        linear-gradient(180deg, #f5f3ff 0%, #eef2ff 48%, #fff 100%);
+    }
+    .phone-shot h1 {
+      max-width: 900px;
+      margin: 0 auto 20px;
+      font-size: 72px;
+      line-height: 1.03;
+      letter-spacing: -0.055em;
+    }
+    .phone-shot > p { margin: 0 auto 52px; font-size: 30px; color: var(--muted); }
+    .phone-frame {
+      width: 520px;
+      height: 1535px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 62px 62px 0 0;
+      background: #111827;
+      box-shadow: 0 40px 110px rgba(49, 46, 129, .24);
+      overflow: hidden;
+    }
+    .phone-frame iframe {
+      display: block;
+      width: 480px;
+      height: 1515px;
+      border: 0;
+      border-radius: 43px 43px 0 0;
+      background: #fff;
+    }
+
+    .promo {
+      padding: 34px 36px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 92% 12%, rgba(255,255,255,.22), transparent 30%),
+        linear-gradient(135deg, #312e81, #4f46e5 68%, #6366f1);
+    }
+    .promo .brand { gap: 12px; }
+    .promo .brand img { width: 46px; height: 46px; border-radius: 12px; }
+    .promo .brand span { font-size: 25px; }
+    .promo h1 {
+      width: 350px;
+      margin: 28px 0 0;
+      font-size: 35px;
+      line-height: 1.03;
+      letter-spacing: -0.045em;
+    }
+
+    .chrome-shot {
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      align-items: center;
+      gap: 74px;
+      padding: 70px 92px;
+      background:
+        radial-gradient(circle at 12% 10%, #e0e7ff, transparent 26%),
+        linear-gradient(145deg, #f8faff, #fff 62%);
+    }
+    .chrome-copy .brand { margin-bottom: 58px; }
+    .chrome-copy h1 {
+      max-width: 650px;
+      margin: 0 0 24px;
+      font-size: 68px;
+      line-height: 1.02;
+      letter-spacing: -0.06em;
+    }
+    .chrome-copy p { max-width: 620px; margin: 0; font-size: 25px; line-height: 1.45; color: var(--muted); }
+    .chrome-copy .privacy {
+      display: inline-flex;
+      margin-top: 34px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .popup-frame {
+      width: 404px;
+      height: 682px;
+      padding: 18px 22px 18px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: #fff;
+      box-shadow: 0 36px 90px rgba(17, 24, 39, .18);
+      overflow: hidden;
+    }
+    .popup-frame iframe { display: block; width: 360px; height: 646px; border: 0; background: #f5f5fb; }
+  </style>
+</head>
+<body>
+  <script>
+    const asset = new URLSearchParams(location.search).get("asset");
+    const icon = "/public/icons/icon-512.png";
+
+    function brand() {
+      return `<div class="brand"><img src="${icon}" alt=""><span>MoneyMinder</span></div>`;
+    }
+
+    function show(markup) {
+      document.body.innerHTML = markup;
+      document.body.classList.add("ready");
+    }
+
+    function stripScripts(html) {
+      return html.replace(/<script\b[\s\S]*?<\/script>/gi, "");
+    }
+
+    async function popupDocument(mode) {
+      const [html, css] = await Promise.all([
+        fetch("/extension/popup.html").then((response) => response.text()),
+        fetch("/extension/popup.css").then((response) => response.text()),
+      ]);
+      const frame = document.getElementById("popup");
+      frame.srcdoc = stripScripts(html)
+        .replace(/<link[^>]+popup\.css[^>]*>/i, `<style>${css}\nbody{overflow:hidden}</style>`);
+      await new Promise((resolve) => frame.addEventListener("load", resolve, { once: true }));
+      const doc = frame.contentDocument;
+      doc.getElementById("loading").hidden = true;
+      doc.getElementById("login-view").hidden = true;
+      doc.getElementById("dashboard-view").hidden = false;
+      doc.getElementById("spent-amount").textContent = "₹1,860";
+      doc.getElementById("daily-amount").textContent = "₹2,140";
+      const pill = doc.getElementById("track-pill");
+      pill.textContent = "On track";
+      pill.className = "pill ok";
+      doc.getElementById("categories").innerHTML =
+        '<div class="cat"><span class="cat-name">Food</span><strong class="cat-val">₹820</strong></div>' +
+        '<div class="cat"><span class="cat-name">Travel</span><strong class="cat-val">₹340</strong></div>' +
+        '<div class="cat"><span class="cat-name">Housing</span><strong class="cat-val">₹700</strong></div>';
+      doc.getElementById("households-list").innerHTML =
+        '<div class="hh"><span class="hh-name">Flat 3B</span><strong class="hh-bal owed">+₹1,800</strong></div>';
+      doc.getElementById("expense-household").innerHTML = '<option>Flat 3B</option>';
+
+      if (mode === "detection") {
+        const detected = doc.getElementById("detected-card");
+        detected.hidden = false;
+        doc.getElementById("detected-amount").textContent = "₹1,249";
+        doc.getElementById("detected-merchant").textContent = "Fresh Basket";
+        doc.getElementById("detected-category").value = "food";
+        doc.querySelector(".summary-card").hidden = true;
+        doc.querySelector("#expense-form").hidden = true;
+        doc.querySelector(".actions").hidden = true;
+        doc.querySelector(".page-access").style.marginTop = "0";
+      }
+      document.body.classList.add("ready");
+    }
+
+    async function scanDocument() {
+      const [html, css] = await Promise.all([
+        fetch("/public/scan.html").then((response) => response.text()),
+        fetch("/public/css/app.css").then((response) => response.text()),
+      ]);
+      const frame = document.getElementById("phone");
+      frame.srcdoc = stripScripts(html)
+        .replace(/<link[^>]+css\/app\.css[^>]*>/i, `<style>${css}\nbody{overflow:hidden}</style>`);
+      await new Promise((resolve) => frame.addEventListener("load", resolve, { once: true }));
+      const doc = frame.contentDocument;
+      doc.getElementById("upload").hidden = true;
+      doc.getElementById("lines").hidden = false;
+      doc.getElementById("house-field").hidden = false;
+      doc.getElementById("house").innerHTML = "<option>Flat 3B</option>";
+      doc.getElementById("line-rows").innerHTML = [
+        ["Basmati rice", "₹240", "shared"],
+        ["Fresh vegetables", "₹185", "shared"],
+        ["Coffee", "₹320", "mine"],
+        ["Cleaning supplies", "₹275", "shared"],
+      ].map(([name, amount, mode]) =>
+        `<div class="card line-row"><div class="line-head"><span class="supplier">${name}</span><span class="amt">${amount}</span></div>` +
+        `<div class="seg"><button class="seg-btn${mode === "mine" ? " is-active" : ""}">Mine</button>` +
+        `<button class="seg-btn${mode === "shared" ? " is-active" : ""}">Shared</button></div></div>`
+      ).join("");
+      const navScript = doc.createElement("script");
+      navScript.src = "/public/js/nav.js";
+      await new Promise((resolve) => {
+        navScript.addEventListener("load", resolve, { once: true });
+        doc.body.appendChild(navScript);
+      });
+      frame.contentWindow.renderNav("scan.html");
+      doc.querySelector(".screen").style.paddingTop = "36px";
+      document.body.classList.add("ready");
+    }
+
+    if (asset === "play-feature") {
+      show(`<main class="asset feature">${brand()}<h1>Know your real cost of living.</h1><p>Personal budgets and shared household bills, together in one calm view.</p><img class="wallet-card" src="${icon}" alt=""></main>`);
+    } else if (asset === "play-dashboard") {
+      show(`<main class="asset phone-shot"><h1>Your money, without the guesswork.</h1><p>Personal spending and your share of every household bill.</p><div class="phone-frame"><iframe src="/public/demo.html" title="MoneyMinder dashboard"></iframe></div></main>`);
+    } else if (asset === "play-scan") {
+      show(`<main class="asset phone-shot"><h1>Choose one image. Split each item.</h1><p>Review every detected line before it enters your ledger.</p><div class="phone-frame"><iframe id="phone" title="MoneyMinder receipt review"></iframe></div></main>`);
+      scanDocument();
+    } else if (asset === "chrome-promo") {
+      show(`<main class="asset promo">${brand()}<h1>Budget and split bills from your browser.</h1></main>`);
+    } else if (asset === "chrome-dashboard" || asset === "chrome-detection") {
+      const detection = asset === "chrome-detection";
+      show(`<main class="asset chrome-shot"><section class="chrome-copy">${brand()}<h1>${detection ? "Spot a purchase. Save it only when you choose." : "Your daily budget, one click away."}</h1><p>${detection ? "Optional HTTPS page access extracts an amount and merchant locally. Page content is never uploaded." : "Check spending pace, household balances, and add a shared expense without leaving the current tab."}</p><span class="privacy">${detection ? "Local detection · explicit Track action" : "No ads · no third-party analytics"}</span></section><div class="popup-frame"><iframe id="popup" title="MoneyMinder extension"></iframe></div></main>`);
+      popupDocument(detection ? "detection" : "dashboard");
+    } else {
+      show(`<main class="asset feature"><h1>Unknown asset</h1></main>`);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Demo · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen dashboard-screen">
+      <div class="demo-banner"><strong>Invite-only pilot demo</strong><a href="login.html">Participant login</a></div>
+      <header class="dashboard-head">
+        <div><p class="eyebrow">12 July 2026</p><h1>Hi, Aarav</h1></div>
+        <a class="avatar-link" href="login.html" aria-label="Participant login">A</a>
+      </header>
+      <section class="overview-card" aria-labelledby="demo-cost-title">
+        <div class="overview-topline"><p id="demo-cost-title">Your true cost this month</p><span class="pill pill--ok">On track</span></div>
+        <div class="overview-amount amount">₹12,220</div>
+        <div class="overview-split"><div><span>Personal</span><strong>₹10,420</strong></div><div><span>Shared</span><strong>₹1,800</strong></div></div>
+        <div class="budget-track" aria-hidden="true"><span style="width:82%"></span></div>
+        <div class="budget-caption"><span>82% of ₹14,900 budget</span><span>₹2,680 left</span></div>
+      </section>
+      <a class="btn dashboard-primary" href="login.html">Sign in to add an expense</a>
+      <a class="settle-callout" href="login.html"><span><strong>You’re owed ₹1,800</strong><small>Participant login to settle up</small></span><span aria-hidden="true">›</span></a>
+      <section class="dashboard-section" aria-labelledby="demo-categories"><div class="section-head"><h2 id="demo-categories">Where it goes</h2><a href="login.html">Participant login</a></div>
+        <div class="category-list">
+          <div class="category-row"><div><strong>Housing</strong><span>₹6,600</span></div><div class="category-track"><span style="width:100%"></span></div></div>
+          <div class="category-row"><div><strong>Food</strong><span>₹3,320</span></div><div class="category-track"><span style="width:50%"></span></div></div>
+          <div class="category-row"><div><strong>Misc</strong><span>₹1,500</span></div><div class="category-track"><span style="width:23%"></span></div></div>
+        </div>
+      </section>
+      <section class="dashboard-section" aria-labelledby="demo-recent"><div class="section-head"><h2 id="demo-recent">Recent activity</h2><a href="login.html">Participant login</a></div>
+        <div class="activity-list">
+          <a class="activity-row" href="login.html"><span><strong>Groceries</strong><small>Shared · Flat 3B · 12 July</small></span><strong>₹620</strong></a>
+          <a class="activity-row" href="login.html"><span><strong>Electricity</strong><small>Shared · Flat 3B · 10 July</small></span><strong>₹900</strong></a>
+          <a class="activity-row" href="login.html"><span><strong>Bus pass</strong><small>Personal · 8 July</small></span><strong>₹350</strong></a>
+        </div>
+      </section>
+      <section class="dashboard-section" aria-labelledby="demo-trend"><div class="section-head"><h2 id="demo-trend">Last 14 days</h2></div><div class="trend-surface" id="trend-svg"></div></section>
+    </main>
+  </div>
+  <nav class="nav" aria-label="Demo navigation"></nav>
+  <script src="js/nav.js"></script><script src="js/charts.js"></script><script src="js/pwa.js"></script>
+  <script>
+    renderNav("index.html");
+    document.getElementById("trend-svg").innerHTML = Charts.trend([
+      {date:"2026-06-29",amount:0},{date:"2026-06-30",amount:320},{date:"2026-07-01",amount:0},{date:"2026-07-02",amount:1200},{date:"2026-07-03",amount:0},{date:"2026-07-04",amount:600},{date:"2026-07-05",amount:0},{date:"2026-07-06",amount:800},{date:"2026-07-07",amount:0},{date:"2026-07-08",amount:350},{date:"2026-07-09",amount:0},{date:"2026-07-10",amount:900},{date:"2026-07-11",amount:0},{date:"2026-07-12",amount:620}
+    ]);
+  </script>
+</body>
+</html>

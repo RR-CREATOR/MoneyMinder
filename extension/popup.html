@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MoneyMinder</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="brand">MoneyMinder</span>
+    </header>
+
+    <!-- Login view -->
+    <section id="login-view" class="view" hidden>
+      <h1 class="title">Welcome back</h1>
+      <p class="subtitle">Log in to see your budget at a glance.</p>
+      <form id="login-form" class="card">
+        <div id="login-disclosure" class="data-disclosure" role="note" aria-labelledby="login-disclosure-title">
+          <h2 id="login-disclosure-title">Before you connect</h2>
+          <p id="account-data-disclosure">MoneyMinder sends your username and password only to the MoneyMinder server packaged with this extension to authenticate you. It does not store them. It stores the authentication token returned by that server in Chrome so it can load your budget and household data and save expenses you choose to track. The token is sent only to the packaged server.</p>
+          <p id="page-data-disclosure"><strong>Optional page processing is separate.</strong> It is off by default and requires a separate enable action and Chrome permission. Once enabled, local page processing continues until you disable it, including while logged out. MoneyMinder reads limited order and receipt text locally. Page text is not uploaded; only a purchase you review and choose to Track is sent to the packaged server.</p>
+          <label class="consent-check">
+            <input id="login-consent" type="checkbox" required aria-describedby="account-data-disclosure page-data-disclosure" />
+            <span>I understand and agree to this account connection.</span>
+          </label>
+        </div>
+        <label class="field">
+          <span>Username</span>
+          <input id="login-username" type="text" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="login-password" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="login-error" class="error" role="alert" hidden></p>
+        <button id="login-submit" type="submit" class="btn btn-primary">Log in</button>
+      </form>
+    </section>
+
+    <!-- Dashboard view -->
+    <section id="dashboard-view" class="view" hidden>
+      <div id="detected-card" class="card detected" hidden>
+        <span class="detected-badge">Purchase detected on this page</span>
+        <div class="detected-amount" id="detected-amount">₹0</div>
+        <div class="detected-merchant">at <span id="detected-merchant">this site</span></div>
+        <label class="detected-cat-label" for="detected-category">Category</label>
+        <select id="detected-category" class="input">
+          <option value="food">Food</option>
+          <option value="travel">Travel</option>
+          <option value="housing">Housing</option>
+          <option value="misc">Misc</option>
+          <option value="other">Other</option>
+        </select>
+        <p id="detected-error" class="error" hidden></p>
+        <div class="row">
+          <button id="detected-track" type="button" class="btn btn-primary grow">Track this</button>
+          <button id="detected-dismiss" type="button" class="btn btn-ghost">Dismiss</button>
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="summary-head">
+          <div>
+            <div class="summary-label">Spent today's pace</div>
+            <div class="summary-amount"><span id="spent-amount">₹0</span>
+              <span class="of">of</span> <span id="daily-amount">₹0</span></div>
+          </div>
+          <span id="track-pill" class="pill">—</span>
+        </div>
+        <div id="categories" class="cats"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Households</div>
+        <div id="households-list" class="households">
+          <div class="muted small">Loading…</div>
+        </div>
+      </div>
+
+      <form id="expense-form" class="card">
+        <div class="card-title">Quick expense</div>
+        <select id="expense-household" class="input"></select>
+        <input id="expense-desc" class="input" type="text" placeholder="Description" />
+        <div class="row">
+          <input id="expense-amount" class="input grow" type="number" step="0.01" min="0" placeholder="Amount (₹)" />
+          <button id="expense-submit" type="submit" class="btn btn-primary">Add</button>
+        </div>
+        <p id="expense-error" class="error" hidden></p>
+      </form>
+
+      <div class="actions">
+        <button id="open-app" type="button" class="btn btn-ghost">Open full app</button>
+        <button id="logout" type="button" class="btn btn-ghost danger">Log out</button>
+      </div>
+
+      <div class="page-access">
+        <p>
+          <strong>Optional page access:</strong> When enabled, MoneyMinder reads order and receipt page text locally to find the amount, merchant, and
+          category. Page content is never uploaded; a spend is only saved to
+          your MoneyMinder server after you press <strong>Track</strong>.
+        </p>
+        <label class="toggle">
+          <input id="detect-toggle" type="checkbox" />
+          <span>Enable purchase detection on HTTPS pages</span>
+        </label>
+      </div>
+    </section>
+
+    <div id="loading" class="view loading">Loading…</div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

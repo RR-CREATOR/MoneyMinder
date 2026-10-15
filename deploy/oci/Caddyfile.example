@@ -1,0 +1,5 @@
+# Replace app.example.invalid with the exact hostname in APP_ORIGIN, then install
+# this file at /etc/caddy/Caddyfile and run `caddy validate` before reloading.
+app.example.invalid {
+	reverse_proxy 127.0.0.1:3000
+}

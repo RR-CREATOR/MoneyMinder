@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Roommates · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen" id="screen">
+      <div class="skeleton sk-line w-40"></div>
+      <div class="skeleton sk-card" style="margin-top:16px"></div>
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Primary"></nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    renderNav("household.html");
+
+    const screen = document.getElementById("screen");
+    const fmt = (n) => API.formatMoney(n, true);
+    const esc = API.escapeHtml;
+    const CATEGORIES = ["food", "travel", "housing", "misc", "other"];
+    const CAT_LABEL = { food: "Food", travel: "Travel", housing: "Housing", misc: "Misc", other: "Other" };
+
+    function catOptions(selected) {
+      return CATEGORIES.map((c) =>
+        '<option value="' + c + '"' + (c === selected ? " selected" : "") + ">" + CAT_LABEL[c] + "</option>"
+      ).join("");
+    }
+
+    function balanceLabel(net) {
+      if (net > 0.005) return '<span class="pos">You\'re owed ' + fmt(net) + "</span>";
+      if (net < -0.005) return '<span class="neg">You owe ' + fmt(net) + "</span>";
+      return '<span class="muted">Settled up</span>';
+    }
+
+    function ordinal(n) {
+      const s = ["th", "st", "nd", "rd"];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    // ---- List view ----
+    async function showList() {
+      const { households } = await API.get("/api/households");
+      screen.classList.add("reveal");
+
+      const cards = '<ul class="household-list">' + households.map((h) => {
+        return (
+          '<li><a class="card" href="household.html?id=' + encodeURIComponent(h.id) + '">' +
+          '<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">' +
+          "<strong>" + esc(h.name) + "</strong>" +
+          '<span class="code-chip">' + esc(h.code) + "</span></div>" +
+          '<div class="sub muted" style="margin-top:6px">' + h.members + " member" + (h.members === 1 ? "" : "s") + "</div>" +
+          '<div style="margin-top:6px">' + balanceLabel(h.balance) + "</div></a></li>"
+        );
+      }).join("") + "</ul>";
+
+      screen.innerHTML =
+        "<h1>Roommates</h1>" +
+        '<p class="muted">Split shared costs and settle up.</p>' +
+        (households.length ? cards : '<div class="empty"><p>No households yet. Create one or join with a code.</p></div>') +
+
+        '<h2 class="section-label">Create a household</h2>' +
+        '<form class="card" id="create-form">' +
+        '<div class="field"><label for="hname">Name</label><input class="input" id="hname" required placeholder="e.g. Flat 3B" /></div>' +
+        '<p class="msg msg--error" id="create-error" role="alert" hidden></p>' +
+        '<button class="btn" type="submit">Create household</button></form>' +
+
+        '<h2 class="section-label">Join with a code</h2>' +
+        '<form class="card" id="join-form">' +
+        '<div class="field"><label for="jcode">6-character code</label><input class="input" id="jcode" maxlength="6" required placeholder="ABC123" style="text-transform:uppercase" /></div>' +
+        '<p class="msg msg--error" id="join-error" role="alert" hidden></p>' +
+        '<button class="btn btn--ghost" type="submit">Join household</button></form>';
+
+      document.getElementById("create-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const err = document.getElementById("create-error");
+        err.hidden = true;
+        const name = document.getElementById("hname").value.trim();
+        if (!name) { err.textContent = "Enter a name."; err.hidden = false; return; }
+        try {
+          const body = { name };
+          const { household } = await API.post(
+            "/api/households",
+            body,
+            API.operationKey(form, body),
+          );
+          API.clearOperation(form);
+          location.href = "household.html?id=" + encodeURIComponent(household.id);
+        } catch (e2) { err.textContent = e2.message; err.hidden = false; }
+      });
+
+      document.getElementById("join-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const err = document.getElementById("join-error");
+        err.hidden = true;
+        const code = document.getElementById("jcode").value.trim().toUpperCase();
+        if (!code) { err.textContent = "Enter a code."; err.hidden = false; return; }
+        try {
+          const { id } = await API.post("/api/households/join", { code });
+          location.href = "household.html?id=" + encodeURIComponent(id);
+        } catch (e2) { err.textContent = e2.message; err.hidden = false; }
+      });
+    }
+
+    // ---- Detail view ----
+    async function showDetail(id) {
+      const path = "/api/households/" + encodeURIComponent(id);
+      const [h, rec] = await Promise.all([API.get(path), API.get(path + "/recurring")]);
+      const recurring = rec.recurring || [];
+      const memberByKey = {};
+      for (const m of h.members) memberByKey[m.key] = m;
+      const myNet = (h.balances.find((b) => b.key === h.me) || {}).net || 0;
+      const pending = h.pendingSettlements || [];
+
+      const pendingList = pending.length ? pending.map((s) => {
+        const canConfirm = s.to === h.me;
+        return '<div class="owe-row"><div class="owe-line"><span class="label">' +
+          esc(s.fromName) + ' paid ' + esc(s.toName) + '</span><span class="value amount">' + fmt(s.amount) + '</span></div>' +
+          '<p class="msg muted owe-hint">UPI payment awaiting recipient confirmation.</p>' +
+          (canConfirm ? '<button class="btn btn--auto confirm-payment" data-sid="' + esc(s.id) + '">Confirm received</button>' : '') +
+          '</div>';
+      }).join("") : '';
+
+      // Each owes row: if I'm the debtor, show Pay-via-UPI + Mark-as-paid.
+      const owesList = h.owes.length
+        ? h.owes.map((o, i) => {
+            let row =
+              '<div class="owe-row"><div class="owe-line"><span class="label">' +
+              esc(o.fromName) + " owes " + esc(o.toName) +
+              '</span><span class="value amount">' + fmt(o.amount) + "</span></div>";
+            if (o.from === h.me) {
+              const payee = memberByKey[o.to] || {};
+              if (payee.vpa) {
+                row +=
+                  '<div class="owe-actions">' +
+                  '<button class="btn btn--auto pay-btn" data-i="' + i + '">Pay ' + fmt(o.amount) + " via UPI</button>" +
+                  '<button class="btn btn--ghost btn--auto paid-btn" data-i="' + i + '">Request confirmation</button></div>';
+              } else {
+                row += '<p class="msg muted owe-hint">Ask ' + esc(o.toName) + " to add a UPI ID in Profile.</p>";
+              }
+              row += '<p class="msg msg--error owe-error" id="owe-error-' + i + '" hidden></p>';
+            }
+            return row + "</div>";
+          }).join("")
+        : '<p class="muted" style="margin:0">Everyone\'s settled up.</p>';
+
+      const expensesList = h.expenses.length
+        ? h.expenses.map((e) =>
+            '<div class="card receipt-card">' +
+            '<span class="meta">' +
+            '<div class="supplier">' + esc(e.description) + "</div>" +
+            '<div class="sub"><span class="tag">' + esc(CAT_LABEL[e.category] || e.category) + "</span> Paid by " + esc(e.paidByName) + " · split " + e.splitAmong.length + (e.date ? " · " + esc(e.date) : "") + "</div>" +
+            "</span>" +
+            '<span class="amt">' + fmt(e.amount) + "</span></div>"
+          ).join("")
+        : '<p class="muted">No expenses yet.</p>';
+
+      const memberChecks = h.members.map((m) =>
+        '<label class="check"><input type="checkbox" name="split" value="' + esc(m.key) + '" checked /> ' + esc(m.name) + "</label>"
+      ).join("");
+
+      const payOptions = h.members
+        .filter((m) => m.key !== h.me)
+        .map((m) => '<option value="' + esc(m.key) + '">' + esc(m.name) + "</option>")
+        .join("");
+
+      const recurringList = recurring.length
+        ? recurring.map((r) =>
+            '<div class="rec-row"><div class="rec-meta"><div class="supplier">' + esc(r.description) +
+            ' <span class="tag">' + esc(CAT_LABEL[r.category] || r.category) + "</span></div>" +
+            '<div class="sub muted">' + fmt(r.amount) + " · every " + ordinal(r.dayOfMonth) + "</div></div>" +
+            '<button class="rec-remove" data-rid="' + esc(r.id) + '" aria-label="Remove ' + esc(r.description) + '">&times;</button></div>'
+          ).join("")
+        : '<p class="muted" style="margin:0">No recurring bills.</p>';
+
+      screen.innerHTML =
+        '<a class="back" href="household.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Households</a>' +
+        '<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">' +
+        "<h1>" + esc(h.name) + "</h1>" +
+        '<span class="code-chip">' + esc(h.code) + "</span></div>" +
+        '<p class="muted">Share the code so roommates can join.</p>' +
+
+        '<div class="card">' + balanceLabel(myNet) + "</div>" +
+
+        (pendingList ? '<h2 class="section-label">Pending confirmation</h2><div class="card">' + pendingList + '</div>' : '') +
+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 8px">' +
+        '<h2 class="section-label" style="margin:0">Who owes who</h2>' +
+        '<button class="btn btn--ghost btn--auto wa-btn" id="wa-btn" type="button">Share on WhatsApp</button></div>' +
+        '<div class="card">' + owesList + "</div>" +
+
+        '<h2 class="section-label">Expenses</h2>' + expensesList +
+
+        '<h2 class="section-label">Add an expense</h2>' +
+        '<form class="card" id="exp-form">' +
+        '<div class="field"><label for="desc">Description</label><input class="input" id="desc" required placeholder="e.g. Groceries" /></div>' +
+        '<div class="field"><label for="amt">Amount (₹)</label><input class="input" id="amt" type="number" min="0.01" step="0.01" inputmode="decimal" required /></div>' +
+        '<div class="field"><label for="cat">Category</label><select class="input" id="cat">' + catOptions("other") + "</select></div>" +
+        '<fieldset class="field split-set"><legend>Split among</legend><div class="checks">' + memberChecks + "</div></fieldset>" +
+        '<p class="msg msg--warn" id="afford-note" hidden></p>' +
+        '<p class="msg msg--error" id="exp-error" role="alert" hidden></p>' +
+        '<button class="btn" type="submit">Add expense</button></form>' +
+
+        '<h2 class="section-label">Recurring bills</h2>' +
+        '<div class="card" id="rec-list">' + recurringList + "</div>" +
+        '<form class="card" id="rec-form">' +
+        '<div class="field"><label for="rec-desc">Description</label><input class="input" id="rec-desc" required placeholder="e.g. Rent" /></div>' +
+        '<div class="field"><label for="rec-amt">Amount (₹)</label><input class="input" id="rec-amt" type="number" min="0.01" step="0.01" inputmode="decimal" required /></div>' +
+        '<div class="field"><label for="rec-cat">Category</label><select class="input" id="rec-cat">' + catOptions("housing") + "</select></div>" +
+        '<div class="field"><label for="rec-day">Day of month (1–28)</label><input class="input" id="rec-day" type="number" min="1" max="28" step="1" inputmode="numeric" required /></div>' +
+        '<p class="msg msg--error" id="rec-error" role="alert" hidden></p>' +
+        '<button class="btn btn--ghost" type="submit">Add recurring bill</button></form>' +
+
+        '<h2 class="section-label">Settle up</h2>' +
+        (payOptions
+          ? '<form class="card" id="settle-form">' +
+            '<div class="field"><label for="payto">Pay</label><select class="input" id="payto">' + payOptions + "</select></div>" +
+            '<div class="field"><label for="settle-amt">Amount (₹)</label><input class="input" id="settle-amt" type="number" min="0.01" step="0.01" inputmode="decimal" required /></div>' +
+            '<div class="field"><label for="settle-method">Method</label><select class="input" id="settle-method"><option value="cash">Cash</option><option value="upi">UPI</option></select></div>' +
+            '<p class="msg msg--error" id="settle-error" role="alert" hidden></p>' +
+            '<button class="btn btn--ghost" type="submit">Record payment</button></form>'
+          : '<p class="muted">No one else to settle with yet.</p>');
+
+      // ---- UPI handoff + recipient-confirmed settlement ----
+      screen.querySelectorAll(".pay-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const o = h.owes[Number(btn.dataset.i)];
+          const payee = memberByKey[o.to] || {};
+          // upi://pay?pa=<vpa>&pn=<name>&am=<amount>&cu=INR&tn=...
+          const link =
+            "upi://pay?pa=" + encodeURIComponent(payee.vpa) +
+            "&pn=" + encodeURIComponent(payee.name || o.toName) +
+            "&am=" + encodeURIComponent(Number(o.amount).toFixed(2)) +
+            "&cu=INR&tn=MoneyMinder%20settle";
+          location.href = link;
+        });
+      });
+      screen.querySelectorAll(".paid-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const o = h.owes[Number(btn.dataset.i)];
+          const err = document.getElementById("owe-error-" + btn.dataset.i);
+          if (err) err.hidden = true;
+          btn.disabled = true;
+          try {
+            const body = { to: o.to, amount: o.amount, method: "upi" };
+            await API.post(path + "/settle", body, API.operationKey(btn, body));
+            API.clearOperation(btn);
+            if (window.Toast) Toast.show("Confirmation requested", "ok");
+            showDetail(id);
+          } catch (e2) {
+            if (err) { err.textContent = e2.message; err.hidden = false; }
+            if (window.Toast) Toast.show(e2.message, "error");
+            btn.disabled = false;
+          }
+        });
+      });
+
+      screen.querySelectorAll(".confirm-payment").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          try {
+            await API.post(path + "/settlements/" + encodeURIComponent(btn.dataset.sid) + "/confirm", {});
+            if (window.Toast) Toast.show("Payment confirmed", "ok");
+            showDetail(id);
+          } catch (e2) {
+            if (window.Toast) Toast.show(e2.message, "error");
+            btn.disabled = false;
+          }
+        });
+      });
+
+      // ---- Share on WhatsApp ----
+      document.getElementById("wa-btn").addEventListener("click", () => {
+        const lines = ["MoneyMinder — " + h.name];
+        if (h.owes.length) {
+          for (const o of h.owes) lines.push(o.fromName + " owes " + o.toName + " " + fmt(o.amount));
+        } else {
+          lines.push("Everyone's settled up.");
+        }
+        location.href = "https://wa.me/?text=" + encodeURIComponent(lines.join("\n"));
+      });
+
+      // ---- Can-I-afford heads-up: estimate my category spend + my share ----
+      let myBudget = 0;
+      let mySummary = null;
+      Promise.all([API.requireUser(), API.get("/api/summary")])
+        .then(([user, sum]) => { myBudget = Number(user.budget) || 0; mySummary = sum; })
+        .catch(() => {});
+
+      const afford = document.getElementById("afford-note");
+      function checkAfford() {
+        afford.hidden = true;
+        if (!mySummary || !myBudget) return;
+        const amount = Number(document.getElementById("amt").value);
+        if (!(amount > 0)) return;
+        const split = [...screen.querySelectorAll('input[name="split"]:checked')].map((c) => c.value);
+        if (!split.includes(h.me)) return; // not my expense
+        const cat = document.getElementById("cat").value;
+        const myShare = amount / split.length;
+        const already = Number(mySummary.categories[cat]) || 0;
+        // Fair slice: evenly split the monthly budget across the 5 buckets.
+        const slice = myBudget / CATEGORIES.length;
+        if (already + myShare > slice) {
+          afford.textContent = "Heads up: this puts your " + CAT_LABEL[cat] + " spend over budget.";
+          afford.hidden = false;
+        }
+      }
+      document.getElementById("amt").addEventListener("input", checkAfford);
+      document.getElementById("cat").addEventListener("change", checkAfford);
+      screen.querySelectorAll('input[name="split"]').forEach((c) => c.addEventListener("change", checkAfford));
+
+      // ---- Add expense (now with category) ----
+      document.getElementById("exp-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const err = document.getElementById("exp-error");
+        err.hidden = true;
+        const description = document.getElementById("desc").value.trim();
+        const amount = Number(document.getElementById("amt").value);
+        const category = document.getElementById("cat").value;
+        const splitAmong = [...screen.querySelectorAll('input[name="split"]:checked')].map((c) => c.value);
+        if (!description) { err.textContent = "Enter a description."; err.hidden = false; return; }
+        if (!(amount > 0)) { err.textContent = "Amount must be greater than 0."; err.hidden = false; return; }
+        if (!splitAmong.length) { err.textContent = "Pick at least one person to split with."; err.hidden = false; return; }
+        try {
+          const body = { description, amount, category, splitAmong };
+          await API.post(path + "/expenses", body, API.operationKey(form, body));
+          API.clearOperation(form);
+          if (window.Toast) Toast.show("Expense added", "ok");
+          showDetail(id);
+        } catch (e2) { err.textContent = e2.message; err.hidden = false; if (window.Toast) Toast.show(e2.message, "error"); }
+      });
+
+      // ---- Recurring bills: add + remove ----
+      document.getElementById("rec-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const err = document.getElementById("rec-error");
+        err.hidden = true;
+        const description = document.getElementById("rec-desc").value.trim();
+        const amount = Number(document.getElementById("rec-amt").value);
+        const category = document.getElementById("rec-cat").value;
+        const dayOfMonth = Number(document.getElementById("rec-day").value);
+        if (!description) { err.textContent = "Enter a description."; err.hidden = false; return; }
+        if (!(amount > 0)) { err.textContent = "Amount must be greater than 0."; err.hidden = false; return; }
+        if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 28) {
+          err.textContent = "Day of month must be 1–28."; err.hidden = false; return;
+        }
+        try {
+          const body = { description, amount, category, dayOfMonth };
+          await API.post(path + "/recurring", body, API.operationKey(form, body));
+          API.clearOperation(form);
+          if (window.Toast) Toast.show("Recurring bill added", "ok");
+          showDetail(id);
+        } catch (e2) { err.textContent = e2.message; err.hidden = false; if (window.Toast) Toast.show(e2.message, "error"); }
+      });
+
+      screen.querySelectorAll(".rec-remove").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          try {
+            await API.del(path + "/recurring/" + encodeURIComponent(btn.dataset.rid));
+            if (window.Toast) Toast.show("Recurring bill removed", "ok");
+            showDetail(id);
+          } catch (e2) { btn.disabled = false; if (window.Toast) Toast.show(e2.message, "error"); }
+        });
+      });
+
+      // ---- Settle up (with method) ----
+      const settleForm = document.getElementById("settle-form");
+      if (settleForm) {
+        settleForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const form = e.currentTarget;
+          const err = document.getElementById("settle-error");
+          err.hidden = true;
+          const to = document.getElementById("payto").value;
+          const amount = Number(document.getElementById("settle-amt").value);
+          const method = document.getElementById("settle-method").value;
+          if (!(amount > 0)) { err.textContent = "Amount must be greater than 0."; err.hidden = false; return; }
+          try {
+            const body = { to, amount, method };
+            await API.post(path + "/settle", body, API.operationKey(form, body));
+            API.clearOperation(form);
+            if (window.Toast) Toast.show(method === "upi" ? "Confirmation requested" : "Payment recorded", "ok");
+            showDetail(id);
+          } catch (e2) { err.textContent = e2.message; err.hidden = false; if (window.Toast) Toast.show(e2.message, "error"); }
+        });
+      }
+    }
+
+    (async () => {
+      try {
+        await API.requireUser();
+        const id = new URLSearchParams(location.search).get("id");
+        if (id) { await showDetail(id); screen.classList.add("reveal"); }
+        else await showList();
+      } catch (err) {
+        screen.innerHTML = '<p class="msg msg--error" role="alert">' + esc(err.message) + "</p>";
+        if (window.Toast) Toast.show(err.message, "error");
+      }
+    })();
+  </script>
+</body>
+</html>

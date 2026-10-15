@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Profile · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen">
+      <div class="page-head"><h1 style="margin:0">Profile</h1></div>
+      <dl class="card detail-list" id="card" style="margin-top:16px">
+        <div class="detail-row"><dt class="label">Username</dt><dd class="value" id="username">—</dd></div>
+        <div class="detail-row"><dt class="label">Email</dt><dd class="value" id="email">—</dd></div>
+        <div class="detail-row"><dt class="label">Mobile</dt><dd class="value" id="mobile">—</dd></div>
+      </dl>
+
+      <h2 class="section-label">Edit profile</h2>
+      <form class="card" id="edit-form">
+        <div class="field">
+          <label for="displayName">Display name</label>
+          <input class="input" id="displayName" name="displayName" maxlength="64" placeholder="Shown to roommates" />
+        </div>
+        <div class="field">
+          <label for="budget">Monthly budget (₹)</label>
+          <input class="input" id="budget" name="budget" type="number" min="0" step="1" inputmode="numeric" />
+        </div>
+        <div class="field">
+          <label for="vpa">UPI ID</label>
+          <input class="input" id="vpa" name="vpa" autocomplete="off" placeholder="yourname@bank" />
+          <p class="msg muted" style="margin:6px 0 0">Used so roommates can pay you with one tap.</p>
+        </div>
+        <div class="field">
+          <label for="current-password">Current password <span class="muted">(required for UPI changes)</span></label>
+          <input class="input" id="current-password" name="currentPassword" type="password" autocomplete="current-password" />
+        </div>
+        <p class="msg msg--error" id="edit-error" role="alert" hidden></p>
+        <p class="msg msg--ok" id="edit-ok" role="status" hidden>Saved.</p>
+        <button class="btn" type="submit" id="save">Save changes</button>
+      </form>
+
+      <p class="msg msg--error" id="error" role="alert" hidden></p>
+
+      <h2 class="section-label">Your data</h2>
+      <div class="card">
+        <p class="muted">Download a copy of your MoneyMinder data or permanently remove your account.</p>
+        <div class="field">
+          <label for="account-password">Current password</label>
+          <input class="input" id="account-password" type="password" autocomplete="current-password" />
+        </div>
+        <button class="btn btn--ghost" id="export" type="button">Download my data</button>
+        <button class="btn btn--danger" id="delete-account" type="button" style="margin-top:8px">Delete account</button>
+        <p class="muted" style="margin:12px 0 0"><a class="link" href="privacy.html">Privacy policy</a> · <a class="link" href="delete-account.html">Deletion details</a></p>
+      </div>
+
+      <div style="margin-top:24px">
+        <button class="btn btn--ghost" id="logout">Log out</button>
+      </div>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Primary"></nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    renderNav("profile.html");
+
+    const error = document.getElementById("error");
+    const editError = document.getElementById("edit-error");
+    const editOk = document.getElementById("edit-ok");
+    const saveBtn = document.getElementById("save");
+    let loadedVpa = "";
+
+    function fill(user) {
+      document.getElementById("username").textContent = user.username;
+      document.getElementById("email").textContent = user.email;
+      document.getElementById("mobile").textContent = user.mobile;
+      document.getElementById("displayName").value = user.displayName || "";
+      document.getElementById("budget").value = user.budget == null ? "" : user.budget;
+      document.getElementById("vpa").value = user.vpa || "";
+      loadedVpa = user.vpa || "";
+    }
+
+    (async () => {
+      try {
+        fill(await API.requireUser());
+      } catch (err) {
+        error.textContent = err.message;
+        error.hidden = false;
+      }
+    })();
+
+    document.getElementById("edit-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      editError.hidden = true;
+      editOk.hidden = true;
+      const displayName = document.getElementById("displayName").value.trim();
+      const budgetVal = document.getElementById("budget").value;
+      const vpa = document.getElementById("vpa").value.trim();
+      const currentPassword = document.getElementById("current-password").value;
+      if (budgetVal !== "" && (Number(budgetVal) < 0 || Number.isNaN(Number(budgetVal)))) {
+        editError.textContent = "Budget must be a valid amount.";
+        editError.hidden = false;
+        return;
+      }
+      if (vpa !== loadedVpa && !currentPassword) {
+        editError.textContent = "Enter your current password to change your UPI ID.";
+        editError.hidden = false;
+        document.getElementById("current-password").focus();
+        return;
+      }
+      // The inputs are prefilled with the current values, so sending them always
+      // is safe — and lets the user clear a display name or UPI ID by blanking it.
+      // Budget stays guarded: a blank budget keeps the previous one.
+      const body = { displayName, vpa };
+      if (budgetVal !== "") body.budget = Number(budgetVal);
+      if (vpa !== loadedVpa) body.currentPassword = currentPassword;
+      saveBtn.disabled = true;
+      try {
+        const { user } = await API.patch("/api/me", body);
+        fill(user);
+        document.getElementById("current-password").value = "";
+        if (window.Toast) Toast.show("Profile saved", "ok");
+        else editOk.hidden = false;
+      } catch (err) {
+        editError.textContent = err.message;
+        editError.hidden = false;
+        if (window.Toast) Toast.show(err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("logout").addEventListener("click", async (e) => {
+      e.target.disabled = true;
+      try {
+        await API.post("/api/logout", {});
+      } catch (_) {
+        /* log out locally regardless */
+      }
+      location.href = "login.html";
+    });
+
+    document.getElementById("export").addEventListener("click", async (e) => {
+      const passwordInput = document.getElementById("account-password");
+      const currentPassword = passwordInput.value;
+      if (!currentPassword) {
+        if (window.Toast) Toast.show("Enter your current password.", "error");
+        passwordInput.focus();
+        return;
+      }
+      e.target.disabled = true;
+      try {
+        const data = await API.post("/api/me/export", { currentPassword: currentPassword });
+        const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "moneyminder-data.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        if (window.Toast) Toast.show(err.message, "error");
+      } finally {
+        passwordInput.value = "";
+        e.target.disabled = false;
+      }
+    });
+
+    document.getElementById("delete-account").addEventListener("click", async (e) => {
+      const passwordInput = document.getElementById("account-password");
+      const currentPassword = passwordInput.value;
+      if (!currentPassword) {
+        if (window.Toast) Toast.show("Enter your current password.", "error");
+        passwordInput.focus();
+        return;
+      }
+      if (!confirm("Delete your account and personal receipts? Shared ledger records will remain under a deleted-member identifier. This cannot be undone.")) {
+        passwordInput.value = "";
+        return;
+      }
+      e.target.disabled = true;
+      try {
+        await API.del("/api/me", { currentPassword: currentPassword });
+        location.href = "register.html";
+      } catch (err) {
+        if (window.Toast) Toast.show(err.message, "error");
+        passwordInput.value = "";
+        e.target.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

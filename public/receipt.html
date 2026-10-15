@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Receipt · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app app--nav">
+    <main class="screen">
+      <a class="back" href="receipts.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Receipts
+      </a>
+      <div id="sk" aria-hidden="true">
+        <div class="skeleton sk-block" style="border-radius:14px;height:200px"></div>
+        <div class="skeleton sk-card" style="margin-top:16px"></div>
+      </div>
+      <div id="content" class="reveal"></div>
+      <p class="msg msg--error" id="error" role="alert" hidden></p>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Primary"></nav>
+
+  <script src="js/api.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    renderNav("receipts.html");
+
+    const content = document.getElementById("content");
+    const sk = document.getElementById("sk");
+    const error = document.getElementById("error");
+    const fmt = API.formatMoney;
+    const esc = API.escapeHtml;
+
+    function row(label, value) {
+      if (!value) return "";
+      return '<div class="detail-row"><span class="label">' + esc(label) + '</span><span class="value">' + esc(value) + "</span></div>";
+    }
+
+    (async () => {
+      try {
+        await API.requireUser();
+        const id = new URLSearchParams(location.search).get("id");
+        let r;
+        try {
+          r = (await API.get("/api/receipts/" + encodeURIComponent(id))).receipt;
+        } catch (e) {
+          sk.remove();
+          content.innerHTML = '<div class="empty"><p>That receipt couldn\'t be found.</p><a class="link" href="receipts.html">Back to receipts</a></div>';
+          return;
+        }
+        sk.remove();
+
+        let html = "";
+        if (r.image) {
+          html += '<img class="receipt-image" src="/api/image/' + encodeURIComponent(r.image) + '" alt="Receipt image" />';
+        }
+        html += '<h1>' + esc(r.supplier || "Receipt") + "</h1>";
+        html += '<div class="card">';
+        html += row("Category", r.category);
+        html += '<div class="detail-row"><span class="label">Amount</span><span class="value amount">' + fmt(r.amount) + "</span></div>";
+        html += row("Date", r.date);
+        html += row("Supplier", r.supplier);
+        html += row("Payment / document", r.document);
+        html += "</div>";
+        html += '<button class="btn btn--danger" id="del" style="margin-top:16px">Delete receipt</button>';
+        content.innerHTML = html;
+
+        document.getElementById("del").addEventListener("click", async () => {
+          if (!window.confirm("Delete this receipt? This can't be undone.")) return;
+          try {
+            await API.del("/api/receipts/" + encodeURIComponent(r.id));
+            location.href = "receipts.html";
+          } catch (e) {
+            if (window.Toast) Toast.show(e.message || "Could not delete", "error");
+          }
+        });
+      } catch (err) {
+        sk.remove();
+        error.textContent = err.message;
+        error.hidden = false;
+        if (window.Toast) Toast.show(err.message, "error");
+      }
+    })();
+  </script>
+</body>
+</html>

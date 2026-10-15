@@ -1,0 +1,58 @@
+name: moneyminder
+
+services:
+  app:
+    image: ${MONEYMINDER_IMAGE:?Set MONEYMINDER_IMAGE to an immutable linux/arm64 image digest}
+    pull_policy: never
+    restart: unless-stopped
+    init: true
+    network_mode: host
+    env_file:
+      - /etc/moneyminder/app.env
+    volumes:
+      - /srv/moneyminder/app-data:/var/lib/moneyminder
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        umask 077
+        chmod 0700 /var/lib/moneyminder
+        for file in \
+          /var/lib/moneyminder/moneyminder.sqlite3 \
+          /var/lib/moneyminder/moneyminder.sqlite3-wal \
+          /var/lib/moneyminder/moneyminder.sqlite3-shm; do
+          [ ! -L "$${file}" ]
+          if [ -e "$${file}" ]; then
+            [ -f "$${file}" ]
+            chmod 0600 "$${file}"
+          fi
+        done
+        exec node server/app.js
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=256m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    cpus: "1.25"
+    mem_limit: 4g
+    pids_limit: 256
+    stop_grace_period: 35s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+        compress: "true"

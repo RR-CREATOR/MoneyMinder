@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MoneyMinder brand indigo (matches PWA theme_color #4f46e5). -->
+    <color name="indigo">#4f46e5</color>
+    <color name="indigo_dark">#4338ca</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

@@ -1,0 +1,9 @@
+**
+!package.json
+!package-lock.json
+!server
+!server/**
+!public
+!public/**
+server/**/*.test.js
+public/**/*.test.js

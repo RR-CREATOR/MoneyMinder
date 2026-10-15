@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        No-action-bar theme. Status bar is brand indigo (#4f46e5) to match the
+        PWA. Based on a Material 3 theme that does not require Compose.
+    -->
+    <style name="Theme.MoneyMinder" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/indigo</item>
+        <item name="colorPrimaryDark">@color/indigo_dark</item>
+        <item name="android:statusBarColor">@color/indigo</item>
+        <item name="android:windowBackground">@color/indigo</item>
+    </style>
+</resources>

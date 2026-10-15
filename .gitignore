@@ -1,0 +1,19 @@
+node_modules/
+data/
+.env
+*.log
+.audit-*/
+.shots/*.png
+.codex/
+.vscode/
+outputs/
+
+# Android build output and signing secrets (android/.gitignore also covers these;
+# duplicated here so a `git add` from the repo root can't stage them)
+android/keystore.properties
+android/*.jks
+android/*.keystore
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "MoneyMinder",
+  "version": "1.1.0",
+  "minimum_chrome_version": "102",
+  "description": "See your budget and roommate balances, then track confirmed purchases in one tap.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MoneyMinder"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["http://localhost:3000/*"],
+  "optional_host_permissions": ["https://*/*"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

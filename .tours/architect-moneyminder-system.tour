@@ -1,0 +1,113 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "MoneyMinder System Architecture",
+  "description": "An architect-level path through configuration, request handling, financial state, OCR, deletion, clients, and release gates.",
+  "steps": [
+    {
+      "file": "README.md",
+      "pattern": "## Project structure",
+      "title": "Start with the release surface",
+      "description": "MoneyMinder is one Node service and web app, plus a Chrome extension and Android WebView client. This overview establishes the supported topology before following individual request paths."
+    },
+    {
+      "file": "server/config.js",
+      "pattern": "function loadConfig(env = process.env)",
+      "title": "Configuration fails closed",
+      "description": "Runtime configuration is normalized and production-only requirements are enforced here. Changes to origins, database connectivity, proxy trust, limits, or retention should begin at this boundary and its tests."
+    },
+    {
+      "file": "server/app.js",
+      "pattern": "async function start()",
+      "title": "Application lifecycle",
+      "description": "Startup initializes the datastore, hydrates valid token-digest admission metadata, verifies OCR data, starts cleanup and recurring work, then accepts traffic. Shutdown reverses dependencies with deadlines so deploys do not abandon writes or cleanup."
+    },
+    {
+      "file": "server/auth.js",
+      "pattern": "function sessionMiddleware()",
+      "title": "Two authentication channels",
+      "description": "Browser and Android clients use secure server sessions; the extension uses bounded, revocable bearer tokens. Authorization remains server-side and sensitive account actions require a browser session plus password reauthentication."
+    },
+    {
+      "file": "server/auth.js",
+      "pattern": "async function initializeTokenCache()",
+      "title": "Bearer admission cache",
+      "description": "Startup retains only unexpired token digests tied to a live user and current auth version. This copy-on-write map protects the process-wide unknown-token budget; it never replaces datastore-backed authentication, and issue, revocation, deletion, and expiry keep it synchronized."
+    },
+    {
+      "file": "server/api.js",
+      "pattern": "function costOfLiving(data, userKey, now = new Date())",
+      "title": "Personal and shared spending converge",
+      "description": "Dashboard totals combine owned receipts with the authenticated user's deterministic share of household expenses. All arithmetic routes through paise-safe helpers to avoid floating-point drift."
+    },
+    {
+      "file": "server/households.js",
+      "pattern": "function computeBalances(data, householdId)",
+      "title": "Shared-ledger engine",
+      "description": "Expenses are allocated deterministically across active members and confirmed settlements reduce balances. Pending UPI claims intentionally do not change the ledger until the recipient confirms receipt."
+    },
+    {
+      "file": "server/recurring.js",
+      "pattern": "async function runOnce(now = new Date())",
+      "title": "Idempotent recurring expenses",
+      "description": "A dependency-free periodic pass posts due bills once per India-local month while respecting account and household ceilings. It is safe to rerun after restart because each item records its last posted month."
+    },
+    {
+      "file": "server/ocr.js",
+      "pattern": "async function parseReceipt(req, res)",
+      "title": "Bounded receipt OCR",
+      "description": "Uploads are signature- and dimension-validated, stored under the authenticated user, processed with a checksum-verified local model, and protected by worker/time/resource ceilings. Failed and abandoned scans enter durable cleanup paths."
+    },
+    {
+      "file": "server/auth.js",
+      "pattern": "async function deleteMe(req, res)",
+      "title": "Deletion preserves ledger integrity",
+      "description": "Account deletion removes credentials, sessions, tokens, personal receipts, and files while pseudonymizing shared records needed by other members. Invite codes rotate so a deleted member's old invitation cannot be reused."
+    },
+    {
+      "file": "server/uploads.js",
+      "pattern": "async function drainPendingDeletes()",
+      "title": "Durable file cleanup",
+      "description": "Filesystem deletion failures are queued in persisted application state and retried with bounded backoff. A reference check prevents a retried task from deleting an image that became live again."
+    },
+    {
+      "file": "extension/detect.js",
+      "pattern": "function buildCandidate({ jsonLd, url, host, text })",
+      "title": "Local purchase detection",
+      "description": "The optional extension extracts a purchase candidate from order metadata and limited visible text inside the browser. Raw page text stays local; derived fields reach the server only after an explicit Track action."
+    },
+    {
+      "file": "extension/popup.js",
+      "pattern": "async function init()",
+      "title": "Extension control plane",
+      "description": "The popup owns opt-in detection permissions, trusted token storage, dashboard reads, and idempotent expense submission. A Store build has one packaged operator-controlled HTTPS API origin and exposes no runtime server selector."
+    },
+    {
+      "file": "android/app/src/main/java/com/moneyminder/app/MainActivity.kt",
+      "pattern": "class MainActivity : AppCompatActivity()",
+      "title": "Android native shell",
+      "description": "The Android app hosts the web product while adding validated single-image system picking, target-36 resizable-window handling, and user-initiated allowlisted external handoffs. It requests no camera/media permission, and release builds reject cleartext or placeholder backends."
+    },
+    {
+      "file": "scripts/verify-release-artifact.mjs",
+      "pattern": "export async function verifyChromeZip({",
+      "title": "Exact store artifacts",
+      "description": "The release verifier proves the Chrome ZIP allowlist, permissions, packaged origin, and digest. Its Android path proves the single upload certificate, strict signature, pinned bundletool, embedded server origin, bundle validity, and AAB digest; compile-only CI artifacts must never be submitted."
+    },
+    {
+      "file": "deploy/oci/backup.sh",
+      "pattern": "prune_expired_local_recovery_points()",
+      "title": "Paired recovery boundary",
+      "description": "The canonical OCI pilot treats PostgreSQL and DATA_DIR as one encrypted recovery set, prunes only after a new successful recovery point, and pairs this script with a guarded isolated restore drill. Operators still own scheduling, off-instance retention, monitoring, and deletion reconciliation."
+    },
+    {
+      "file": ".github/workflows/verify.yml",
+      "pattern": "jobs:",
+      "title": "Release evidence",
+      "description": "CI combines coverage, dependency scanning, PostgreSQL integration, container smoke tests, Chrome packaging, and signed Android release compilation. Store publication still requires operator identity, live infrastructure, reviewer access, and private signing material."
+    },
+    {
+      "title": "Next move",
+      "description": "Read docs/engineering/ARCHITECTURE.md for the complete component model and docs/engineering/AGENTIC-HANDOFF.md before changing security, money, storage, or release behavior."
+    }
+  ]
+}

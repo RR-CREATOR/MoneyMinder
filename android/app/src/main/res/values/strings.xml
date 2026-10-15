@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyMinder</string>
+
+    <!--
+        server_url is intentionally NOT defined here. It is generated per build
+        type in app/build.gradle.kts (resValue):
+          * debug   -> http://10.0.2.2:3000   (local Express dev server)
+          * release -> MONEYMINDER_SERVER_URL (required public HTTPS origin)
+        Supply the release value as a Gradle property or environment variable.
+    -->
+</resources>

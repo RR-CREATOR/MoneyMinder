@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy · MoneyMinder</title>
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <main class="legal-page">
+    <a class="brand" href="pilot.html">MoneyMinder</a>
+    <p class="pilot-kicker">Privacy notice · 27 July 2026</p>
+    <h1>Your spending is not an operator dashboard.</h1>
+    <p>This notice describes the MoneyMinder pilot. The organization named in your pilot invitation is the pilot operator; its named coordinator is the privacy and grievance contact.</p>
+    <h2>What MoneyMinder stores</h2>
+    <p>Account details you provide; monthly budget and optional UPI ID; personal receipts and uploaded receipt images; household membership, expenses, recurring bills, settlement records; and essential request, security, and diagnostic logs. Logs record request path, method, status, duration, and request ID, not passwords or request bodies. The app processes IP addresses transiently in bounded memory for abuse prevention and rate limiting but does not write them to its application logs; the operator must separately disclose any reverse-proxy or hosting-provider IP logs and their retention.</p>
+    <h2>Why</h2>
+    <p>To authenticate you, calculate your personal and shared cost of living, scan receipts, coordinate household expenses, request and confirm settlements, protect and diagnose the service, and produce aggregate pilot outcomes.</p>
+    <h2>Who can see it</h2>
+    <p>Household members see household expenses, balances, and the UPI IDs needed to pay one another. They do not see your personal receipts or full personal budget. At your direction, MoneyMinder can hand a payment request to an installed UPI app or share named household debts through WhatsApp. Hosting and database providers process data only to operate the service. Pilot partners receive aggregate adoption and outcome reporting only—not named purchases, receipt images, household balances, or UPI IDs.</p>
+    <h2>UPI and receipt scanning</h2>
+    <p>MoneyMinder opens your installed UPI app; it does not hold funds or request a UPI PIN. A UPI payment claim stays pending until the recipient confirms receipt. Receipt images are uploaded to the MoneyMinder server for local OCR and are not sent to a third-party OCR API. An image is retained with a saved receipt; an abandoned recognized image is queued for deletion after 24 hours by an hourly cleanup process.</p>
+    <h2>Chrome extension</h2>
+    <p>Extension sign-in stores a revocable authentication token in extension-only local storage. Optional purchase detection processes the HTTPS page URL, host, order or invoice JSON-LD, and limited visible receipt text locally in your browser. It keeps a derived amount, merchant, and category in per-tab session storage. Page text and browsing history are not uploaded. Only when you press Track are the derived purchase fields sent to your MoneyMinder server.</p>
+    <p>The extension does not sell data, use it for advertising or credit decisions, or allow humans to read page content. The use of information received from Chrome APIs complies with the Chrome Web Store User Data Policy, including its Limited Use requirements.</p>
+    <h2>Sponsored merchant offers</h2>
+    <p>Merchant offers are disabled by default. If the pilot operator enables them after updating the applicable store disclosures, the dashboard may show one clearly labelled, dismissible Sponsored offer. Offers are non-personalized. MoneyMinder does not use your receipts, purchases, merchant history, item text, amounts, categories, budget, balances, debts, settlements, household membership, UPI ID, receipt images, Chrome page content, browsing activity, account identifier, or device identifier to select an offer.</p>
+    <p>When an offer is enabled, MoneyMinder may count an impression after at least half of its card becomes visible and may count a click when you deliberately follow its link. Reporting is limited to aggregate campaign impressions and clicks and cannot be joined to a user, household, receipt, transaction, or device. Merchants and pilot partners receive aggregate totals only. MoneyMinder uses no third-party advertising SDK, tracking pixel, remote advertising script, or ad network, and does not sell or share financial or browsing data for advertising. The Chrome extension never fetches or displays offers and sends no promotion events.</p>
+    <p>Each event uses a fresh random retry key. The server keeps only a one-way hash of that key with the campaign, event type, and time; it does not attach your account or IP address to the promotion record. Sponsored offers must stay disabled until the operator publishes and technically enforces the finite retention period for those retry receipts and daily aggregate totals.</p>
+    <h2>Retention and deletion</h2>
+    <p>You can download your data or delete your account from Profile. The same browser-accessible path is described on the <a class="link" href="delete-account.html">account deletion page</a>. Deletion removes credentials, tokens, personal receipts, and uploaded images from the live service. Shared expense, recurring-bill, and settlement records remain under a non-login deleted-member identifier so other members’ ledgers remain correct; your username is replaced with “Deleted member.” Encrypted paired backups contain both database records and the receipt-image directory and expire within 30 days. Before any restored copy can replace production, the operator must manually reconcile it against an external deletion register so deletions made after the recovery point are honored; this repository does not automate deletion replay. For a closed pilot, identifiable data should be deleted within 90 days of the final report unless a resident keeps an active account. Aggregate results may be retained.</p>
+    <h2>Your choices</h2>
+    <p>You may access or export your data, correct profile data, withdraw from the pilot, delete your account, or raise a grievance with the coordinator named in your invitation. Initial pilots are restricted to residents aged 18 or older.</p>
+    <p class="legal-note">Before a public release, the operator must add its legal name, address, privacy contact, hosting location, processors, final log and backup retention schedule, and incident-response contact.</p>
+    <a class="link" href="login.html">Return to MoneyMinder</a>
+  </main>
+</body>
+</html>
